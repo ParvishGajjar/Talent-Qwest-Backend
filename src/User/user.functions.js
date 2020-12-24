@@ -1,6 +1,7 @@
-import { query } from "../../index.js";
+import { query } from "../index.js";
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
+import { notEmpty } from "../Validation/apivalidations.js";
 
 export const signup = async (req, res) => {
   const salt = genSaltSync(10);
@@ -96,5 +97,62 @@ export const getUsers = async (req, res) => {
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+// Function to insert user location.
+export const insertUserLocation = async (req, res) => {
+  try {
+    if (
+      notEmpty(req.body.countryid) &&
+      notEmpty(req.body.stateid) &&
+      notEmpty(req.body.cityid)
+    ) {
+      const result = await query(
+        `update user_info set country=${req.body.countryid},state=${req.body.stateid},city=${req.body.cityid} where id=${req.user[0].id}`
+      );
+      if (notEmpty(result)) {
+        return res
+          .status(200)
+          .json({ data: true, message: "Data Updated", status: true });
+      } else {
+        throw "Couldn't Insert Data";
+      }
+    } else {
+      throw "Body Parameter are Invalid";
+    }
+  } catch (err) {
+    console.log(err);
+    res
+      .status(404)
+      .json({ data: false, messgae: `Error: ${err}`, status: false });
+  }
+};
+
+export const updateUserLocation = async (req, res) => {
+  try {
+    if (
+      notEmpty(req.body.country) &&
+      notEmpty(req.body.state) &&
+      notEmpty(req.body.city)
+    ) {
+      var result = await query(
+        `update user_info set country=${req.body.country},state=${req.body.state},city=${req.body.city} where id=${req.user[0].id}`
+      );
+      if (notEmpty(result)) {
+        return res
+          .status(200)
+          .json({ data: true, message: "Data Updated", status: true });
+      } else {
+        throw "Couldn't Update Data";
+      }
+    } else {
+      throw "Invalid Body Parameters";
+    }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(404)
+      .json({ data: false, messgae: `Error: ${error}`, status: false });
   }
 };

@@ -6,8 +6,8 @@ const util = require("util");
 var app = express();
 app.use(express.json());
 
-const locationapis = require("./Users/Location/location.routes.js");
-const userauthapis = require("./Users/Onboarding/onboarding.routes");
+const userroutes = require("./User/user.routes");
+const prefetchroutes = require("./Prefetch/prefetch.routes");
 
 var connection = mysql.createConnection({
   host: "13.235.170.141",
@@ -29,8 +29,8 @@ connection.connect(function (err) {
 
 export const query = util.promisify(connection.query).bind(connection);
 
-app.use("/api", userauthapis);
-app.use("/api/location", locationapis);
+app.use("/api/user", userroutes);
+app.use("/api/prefetch", prefetchroutes);
 
 app.listen(3400, (err) => {
   if (err) {

@@ -1,5 +1,5 @@
-import { query } from "../../index.js";
-import { notEmpty } from "../../Validation/apivalidations.js";
+import { query } from "../index.js";
+import { notEmpty } from "../Validation/apivalidations.js";
 // import * as _ from "lodash";
 
 // Functiion to fetch all cities.
@@ -74,65 +74,6 @@ export const getCountry = async (req, res) => {
     return res
       .status(404)
       .json({ data: false, message: `Error: ${err}`, status: false });
-  }
-};
-
-// Function to insert user location.
-export const insertUserLocation = async (req, res) => {
-  try {
-    if (
-      notEmpty(req.body.countryid) &&
-      notEmpty(req.body.stateid) &&
-      notEmpty(req.body.cityid)
-    ) {
-      const result = await query(
-        `update user_info set country=${req.body.countryid},state=${req.body.stateid},city=${req.body.cityid} where id=${req.user[0].id}`
-      );
-      if (notEmpty(result)) {
-        console.log(result);
-        res
-          .status(200)
-          .json({ data: true, message: "Data Updated", status: true });
-      } else {
-        throw "Couldn't Insert Data";
-      }
-    } else {
-      throw "Body Parameter are Invalid";
-    }
-  } catch (err) {
-    console.log(err);
-    res
-      .status(404)
-      .json({ data: false, messgae: `Error: ${err}`, status: false });
-  }
-};
-
-export const updateUserLocation = async (req, res) => {
-  try {
-    if (
-      notEmpty(req.body.countryid) &&
-      notEmpty(req.body.stateid) &&
-      notEmpty(req.body.cityid)
-    ) {
-      var result = await query(
-        `update user_info set country=${req.body.countryid},state=${req.body.stateid},city=${req.body.cityid} where id=${req.user[0].id}`
-      );
-      if (notEmpty(result)) {
-        console.log(result);
-        return res
-          .status(200)
-          .json({ data: true, message: "Data Updated", status: true });
-      } else {
-        throw "Couldn't Update Data";
-      }
-    } else {
-      throw "Invalid Body Parameters";
-    }
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(404)
-      .json({ data: false, messgae: `Error: ${error}`, status: false });
   }
 };
 
