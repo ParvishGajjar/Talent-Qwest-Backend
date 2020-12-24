@@ -5,14 +5,15 @@ import mysql from "mysql";
 const util = require("util");
 var app = express();
 app.use(express.json());
+require('dotenv').config()
 
 const userroutes = require("./User/user.routes");
 const prefetchroutes = require("./Prefetch/prefetch.routes");
 
 var connection = mysql.createConnection({
-  host: "13.235.170.141",
-  user: "testuser",
-  password: "testuser",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   database: "talentQwest",
   port: "3306",
 });
