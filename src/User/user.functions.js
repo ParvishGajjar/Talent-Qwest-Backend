@@ -2,27 +2,144 @@ import { query } from "../index.js";
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { notEmpty } from "../Validation/apivalidations.js";
+import { sendEmailOTP } from "../auth/authentication";
 
 export const signup = async (req, res) => {
   const salt = genSaltSync(10);
   const password = hashSync(req.body.password, salt);
   try {
-    console.log(req.body.email, req.body.password, password);
-    const result = await query(
-      `insert into user_info (user_name, email, password) values ('${req.body.username}','${req.body.email}','${password}')`
-    );
+    try {
+      await query("begin;");
+      console.log(req.body.email, req.body.password, password);
+      const search = await query(
+        `select * from user_info where email='${req.body.email}' and is_verified=1;`
+      );
+      if (search[0]) {
+        return res
+          .status(400)
+          .json({ data: false, message: `User already exists`, status: false });
+      }
+      const result = await query(
+        `insert into user_info (user_name, email, password) values ('${req.body.username}','${req.body.email}','${password}')`
+      );
+      if (result.insertId) {
+        var otp = Math.random();
+        otp = otp * 1000000;
+        otp = parseInt(otp);
+        console.log(otp);
+        const emailSent = sendEmailOTP(req.body, otp);
+        if (!emailSent) {
+          await query(`rollback;`);
+          return res.status(400).json({
+            data: false,
+            message: `Something went wrong`,
+            status: false,
+          });
+        }
+        // var result3 = {
+        //   id: result.insertId,
+        //   email: req.body.email,
+        //   password: undefined,
+        // };
+        // var jsontoken = sign({ result: result3 }, "nph101", {
+        //   expiresIn: "1h",
+        // });
+        // await query(
+        //   `update user_info set token='${jsontoken}' where id = ${result.insertId}`
+        // );
+        await query(`insert into email_verify (user_id,email,otp) values (${result.insertId}
+          ,'${req.body.email}', '${otp}')`);
 
-    if (result.insertId) {
-      return res
-        .status(200)
-        .json({ data: true, message: `Sign Up successful`, status: true });
-    } else {
-      return res
-        .status(400)
-        .json({ data: false, message: `Something went wrong`, status: false });
+        await query("commit;");
+        return res.status(200).json({
+          data: { id: result.insertId },
+          message: `OTP has been sent to your email`,
+          status: true,
+        });
+      } else {
+        await query(`rollback`);
+        return res.status(400).json({
+          data: false,
+          message: `Something went wrong`,
+          status: false,
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      await query(`rollback`);
+      return res.status(400).json({
+        data: false,
+        message: `fail`,
+        status: false,
+      });
     }
   } catch (e) {
-    console.log(e);
+    console.log(`Error in rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const emailVerify = async (req, res) => {
+  try {
+    try {
+      await query(`begin;`);
+      const result = await query(
+        `select * from email_verify where user_id=${req.params.id} order by timestamp desc where is_used=0`
+      );
+      if (!result[0]) {
+        return res
+          .status(404)
+          .json({ data: false, message: `Something went wrong`, status: true });
+      }
+      if (result[0].otp == req.body.otp) {
+        await query(
+          `update email_verify set is_used = 1 where id=${result[0].id}`
+        );
+        await query(
+          `update user_info set is_verified = 1 where id=${result[0].user_id}`
+        );
+
+        await query(
+          `delete from email_verify where email='${result[0].email}' and is_used=0`
+        );
+        await query(
+          `delete from user_info where email='${result[0].email}' and is_verified=0`
+        );
+        let jsontoken = "";
+        jsontoken = sign(
+          {
+            result: {
+              id: result[0].user_id,
+            },
+          },
+          "nph101",
+          {
+            expiresIn: "1h",
+          }
+        );
+        await query(
+          `update user_info set token='${jsontoken}' where id = ${result.insertId}`
+        );
+        await query(`commit;`);
+        return res
+          .status(200)
+          .json({ data: true, message: `Email Verified`, status: true });
+      } else {
+        return res
+          .status(400)
+          .json({ data: false, message: `Invalid OTP`, status: false });
+      }
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Error rolling back: `, e);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
@@ -31,10 +148,11 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   const user = await query(
-    `select user_name, email, password from user_info where email='${req.body.email}';`
+    `select id, email, password from user_info where email='${req.body.email}' and is_verified=1;`
   );
-  if (!user) {
-    return req
+  console.log(user);
+  if (!user[0]) {
+    return res
       .status(404)
       .json({ data: false, message: `User not found`, status: true });
   }
@@ -43,11 +161,11 @@ export const login = async (req, res) => {
     if (passwordCompare) {
       user[0].password = undefined;
       let jsontoken = "";
-      jsontoken = sign({ result: user[0] }, "nph101", {
+      jsontoken = sign({ result: { id: user[0].id } }, "nph101", {
         expiresIn: "2h",
       });
       const updatetoken = query(
-        `update user_info set token='${jsontoken}' where email='${user[0].email}'`
+        `update user_info set token='${jsontoken}' where id='${user[0].id}'`
       );
       if (!updatetoken) {
         return res.status(400).json({
