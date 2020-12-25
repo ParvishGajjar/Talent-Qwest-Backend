@@ -16,5 +16,5 @@
        ../Desktop/Talent-Qwest-Backend> cd src
        ../Desktop/Talent-Qwest-Backend/src> npm run dev
        
-Voila! Your application is live now on your localhost
+Voila! Your application is live now on your localhost :tada:
 
