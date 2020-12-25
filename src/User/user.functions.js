@@ -86,7 +86,7 @@ export const emailVerify = async (req, res) => {
     try {
       await query(`begin;`);
       const result = await query(
-        `select * from email_verify where user_id=${req.params.id} order by timestamp desc where is_used=0`
+        `select * from email_verify where user_id=${req.params.id} order by timestamp desc limit 1 where is_used=0`
       );
       if (!result[0]) {
         return res
