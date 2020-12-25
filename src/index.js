@@ -3,8 +3,10 @@ import express from "express";
 // import * as api from './apifunctions.js'
 import mysql from "mysql";
 const util = require("util");
+var cors = require('cors');
 var app = express();
 app.use(express.json());
+app.use(cors())
 require('dotenv').config()
 
 const userroutes = require("./User/user.routes");
