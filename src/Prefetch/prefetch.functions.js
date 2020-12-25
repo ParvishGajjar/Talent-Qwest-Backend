@@ -79,18 +79,18 @@ export const getCountry = async (req, res) => {
 
 export const getUserLocation = async (req, res) => {
   try {
-    const result = await query(
-      `select id,country,state,city from user_info where id=${req.user[0].id};`
-    );
-    if (notEmpty(result)) {
-      console.log(result);
-      return res
-        .status(200)
-        .json({ data: true, message: `${result}`, status: true });
-    } else {
-      throw "Couldn't Search/Find Data";
-    }
-  } catch (err) {
+     const result = await query(
+        `select id,country,state,city from user_info where id=${req.user[0].id};`
+      );
+      if (notEmpty(result)) {
+        console.log(result);
+        return res
+          .status(200)
+          .json({ data: result, message: `Data fetched`, status: true });
+      } else {
+        throw "Couldn't Search/Find Data";
+      }
+   } catch (err) {
     console.log(err);
     return res
       .status(404)
