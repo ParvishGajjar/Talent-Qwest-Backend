@@ -168,7 +168,7 @@ export const getLanguages = async (req,res) =>{
 
 export const getQualifications = async (req,res) =>{
   try {
-    const result = await query(`select * from qualification_list;`)
+    const result = await query(`select * from qualifcation_list;`)
     if(result[0]){
       return res.status(200).json({data: result, message: `Qualifications fetched`, status: true})
     }
