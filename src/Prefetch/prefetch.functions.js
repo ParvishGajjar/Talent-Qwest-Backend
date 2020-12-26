@@ -201,3 +201,4 @@ export const getQualifications = async (req, res) => {
       .json({ data: false, message: `fail`, status: false });
   }
 };
+
