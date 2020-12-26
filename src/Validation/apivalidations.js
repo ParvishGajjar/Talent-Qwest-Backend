@@ -120,6 +120,7 @@ export { notEmpty, notUndefined, validateEmail, validateURL };
 //   }
 // }
 
+
 // router.get('/getuserssimilarplatforms', isAuthenticated(), getUserSimilarPlatforms)
 
 // export const getUserSimilarPlatforms = async (req, res) => {
@@ -155,6 +156,7 @@ export { notEmpty, notUndefined, validateEmail, validateURL };
 //   }
 // }
 
+
 // Date: 08/09/2020
 
 // Create table similarplatforms
@@ -164,7 +166,7 @@ export { notEmpty, notUndefined, validateEmail, validateURL };
 
 // Reason: Need to add table for similarplatform list so it can be dynamic and not static in frontend.
 
-// <------------------------------------------>
+// <------------------------------------------> 
 
 // [ RowDataPacket { id: 36, user_id: 46, name: 'linkedin' } ]
 
@@ -172,6 +174,7 @@ export { notEmpty, notUndefined, validateEmail, validateURL };
 // {
 //   "Platform":["linkedin","dribbble","fiverr","upwork"]
 // }
+
 
 // export const updateUserPrevPlatforms = async (req, res) => {
 //   try {
@@ -269,6 +272,7 @@ export { notEmpty, notUndefined, validateEmail, validateURL };
 //   }
 // }
 
+
 // Server
 
 // var db = mysql.createConnection({
@@ -284,30 +288,30 @@ export { notEmpty, notUndefined, validateEmail, validateURL };
 //   database: 'workoscope'
 // })
 
-// const sresult = await query(
-//   `insert into user_services (serviceid,userid) values(${serviceid},${uid});`
-// )
-// const result = await skills.map(async item => {
-//   var rs = await query(
-//     `insert into user_skills (userid,skills) values (${uid},${item});`
-//   )
-//   return rs
-// })
-// result.push(phresult)
-// result.push(sresult)
-// Promise.all(result)
-//   .then(() => {
-//     return res.status(200).json({
-//       data: true,
-//       message: 'Data Inserted Succesfully',
-//       status: true
-//     })
-//   })
-//   .catch(err => {
-//     console.log(err)
-//     return res.status(400).json({
-//       data: false,
-//       message: 'something went wrong',
-//       status: false
-//     })
-//   })
+ // const sresult = await query(
+      //   `insert into user_services (serviceid,userid) values(${serviceid},${uid});`
+      // )
+      // const result = await skills.map(async item => {
+      //   var rs = await query(
+      //     `insert into user_skills (userid,skills) values (${uid},${item});`
+      //   )
+      //   return rs
+      // })
+      // result.push(phresult)
+      // result.push(sresult)
+      // Promise.all(result)
+      //   .then(() => {
+      //     return res.status(200).json({
+      //       data: true,
+      //       message: 'Data Inserted Succesfully',
+      //       status: true
+      //     })
+      //   })
+      //   .catch(err => {
+      //     console.log(err)
+      //     return res.status(400).json({
+      //       data: false,
+      //       message: 'something went wrong',
+      //       status: false
+      //     })
+      //   })
