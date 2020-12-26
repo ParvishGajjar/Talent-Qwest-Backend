@@ -79,18 +79,18 @@ export const getCountry = async (req, res) => {
 
 export const getUserLocation = async (req, res) => {
   try {
-     const result = await query(
-        `select id,country,state,city from user_info where id=${req.user[0].id};`
-      );
-      if (notEmpty(result)) {
-        console.log(result);
-        return res
-          .status(200)
-          .json({ data: result, message: `Data fetched`, status: true });
-      } else {
-        throw "Couldn't Search/Find Data";
-      }
-   } catch (err) {
+    const result = await query(
+      `select id,country,state,city from user_info where id=${req.user[0].id};`
+    );
+    if (notEmpty(result)) {
+      console.log(result);
+      return res
+        .status(200)
+        .json({ data: result, message: `Data fetched`, status: true });
+    } else {
+      throw "Couldn't Search/Find Data";
+    }
+  } catch (err) {
     console.log(err);
     return res
       .status(404)
@@ -98,14 +98,17 @@ export const getUserLocation = async (req, res) => {
   }
 };
 
-export const getSkills = async (req,res) =>{
+export const getSkills = async (req, res) => {
   try {
-    const result = await query(`select * from skill_list;`)
-    if(result[0]){
-      return res.status(200).json({data: result, message: `Skills fetched`, status: true})
-    }
-    else{
-      return res.status(404).json({data: [], message: `No skill found`, status: true})
+    const result = await query(`select * from skill_list;`);
+    if (result[0]) {
+      return res
+        .status(200)
+        .json({ data: result, message: `Skills fetched`, status: true });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No skill found`, status: true });
     }
   } catch (e) {
     console.log(e);
@@ -113,16 +116,19 @@ export const getSkills = async (req,res) =>{
       .status(400)
       .json({ data: false, message: `fail`, status: false });
   }
-}
+};
 
-export const getServices = async (req,res) =>{
+export const getServices = async (req, res) => {
   try {
-    const result = await query(`select * from service_list;`)
-    if(result[0]){
-      return res.status(200).json({data: result, message: `Services fetched`, status: true})
-    }
-    else{
-      return res.status(404).json({data: [], message: `No service found`, status: true})
+    const result = await query(`select * from service_list;`);
+    if (result[0]) {
+      return res
+        .status(200)
+        .json({ data: result, message: `Services fetched`, status: true });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No service found`, status: true });
     }
   } catch (e) {
     console.log(e);
@@ -130,16 +136,19 @@ export const getServices = async (req,res) =>{
       .status(400)
       .json({ data: false, message: `fail`, status: false });
   }
-}
+};
 
-export const getHobbies = async (req,res) =>{
+export const getHobbies = async (req, res) => {
   try {
-    const result = await query(`select * from hobby_list;`)
-    if(result[0]){
-      return res.status(200).json({data: result, message: `Hobbies fetched`, status: true})
-    }
-    else{
-      return res.status(404).json({data: [], message: `No hobby found`, status: true})
+    const result = await query(`select * from hobby_list;`);
+    if (result[0]) {
+      return res
+        .status(200)
+        .json({ data: result, message: `Hobbies fetched`, status: true });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No hobby found`, status: true });
     }
   } catch (e) {
     console.log(e);
@@ -147,16 +156,19 @@ export const getHobbies = async (req,res) =>{
       .status(400)
       .json({ data: false, message: `fail`, status: false });
   }
-}
+};
 
-export const getLanguages = async (req,res) =>{
+export const getLanguages = async (req, res) => {
   try {
-    const result = await query(`select * from language_list;`)
-    if(result[0]){
-      return res.status(200).json({data: result, message: `Languages fetched`, status: true})
-    }
-    else{
-      return res.status(404).json({data: [], message: `No language found`, status: true})
+    const result = await query(`select * from language_list;`);
+    if (result[0]) {
+      return res
+        .status(200)
+        .json({ data: result, message: `Languages fetched`, status: true });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No language found`, status: true });
     }
   } catch (e) {
     console.log(e);
@@ -164,16 +176,23 @@ export const getLanguages = async (req,res) =>{
       .status(400)
       .json({ data: false, message: `fail`, status: false });
   }
-}
+};
 
-export const getQualifications = async (req,res) =>{
+export const getQualifications = async (req, res) => {
   try {
-    const result = await query(`select * from qualifcation_list;`)
-    if(result[0]){
-      return res.status(200).json({data: result, message: `Qualifications fetched`, status: true})
-    }
-    else{
-      return res.status(404).json({data: [], message: `No qualification found`, status: true})
+    const result = await query(`select * from qualifcation_list;`);
+    if (result[0]) {
+      return res
+        .status(200)
+        .json({
+          data: result,
+          message: `Qualifications fetched`,
+          status: true,
+        });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No qualification found`, status: true });
     }
   } catch (e) {
     console.log(e);
@@ -181,4 +200,5 @@ export const getQualifications = async (req,res) =>{
       .status(400)
       .json({ data: false, message: `fail`, status: false });
   }
-}
+};
+
