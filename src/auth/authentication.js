@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 const jwt = require("jsonwebtoken");
-// const nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer");
 import { query } from "../index";
 
 export const isAuthenticated = (req, res, next) => {
@@ -14,7 +14,7 @@ export const isAuthenticated = (req, res, next) => {
           return res.json({
             data: false,
             message: "Invalid Token...",
-            status: false
+            status: false,
           });
         } else {
           req.decoded = decoded;
@@ -50,45 +50,44 @@ export const isAuthenticated = (req, res, next) => {
   }
 };
 
-// export const sendEmailOTP = async (body, otp) => {
-//   try {
-//     var mailOptions = {
-//       to: body.email,
-//       subject: "Otp for registration is: ",
-//       text: `OTP for account verification is ${otp}`,
-//       html:
-//         `<div>` +
-//         `<h3>OTP for your account verification is </h3>` +
-//         `<h1 style='font-weight:bold;'>` +
-//         otp +
-//         `</h1>` +
-//         `</div>`, // html body
-//     };
-//     let result = await wrapedSendMail(mailOptions);
-//     return result;
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
+export const sendEmailVerifyLink = async (body, link) => {
+  try {
+    var mailOptions = {
+      to: body.email,
+      subject: "Account Verification Link",
+      text: `Link for account verification is ${link}`,
+      html:
+        `<div>` +
+        `<h3>Link for your account verification is ` +
+        `<a href="${link}" target="_blank" title="Account Verified">${link}</a>` +
+        `</h3>` +
+        `</div>`, // html body
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-// async function wrapedSendMail(mailOptions) {
-//   return new Promise((resolve) => {
-//     let transporter = nodemailer.createTransport({
-//       service: "Gmail",
-//       auth: {
-//         user: process.env.GMAIL_ID,
-//         pass: process.env.GMAIL_PASSWORD,
-//       },
-//     });
+async function wrapedSendMail(mailOptions) {
+  return new Promise((resolve) => {
+    let transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.GMAIL_ID,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
 
-//     transporter.sendMail(mailOptions, function (error, info) {
-//       if (error) {
-//         console.log("error is " + error);
-//         resolve(false); // or use rejcet(false) but then you will have to handle errors
-//       } else {
-//         console.log("Email sent: " + info.response);
-//         resolve(true);
-//       }
-//     });
-//   });
-// }
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log("error is " + error);
+        resolve(false); // or use rejcet(false) but then you will have to handle errors
+      } else {
+        console.log("Email sent: " + info.response);
+        resolve(true);
+      }
+    });
+  });
+}
