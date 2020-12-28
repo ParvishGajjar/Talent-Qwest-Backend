@@ -2,11 +2,9 @@ import { query } from "../index";
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { sendEmailVerifyLink } from "../auth/authentication";
-import {
-  validateSignUp,
-  valiadteLogin,
-  valiadtePageOne,
-} from "../Validation/validatePageOne";
+import { validatePageOne } from "../Validation/validatePageOne";
+import { validateLogin } from "../Validation/validateLogin";
+import { validateSignUp } from "../Validation/validateSignUp";
 import * as jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
@@ -187,7 +185,7 @@ export const resendEmailLink = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { validationError, isValid } = valiadteLogin(req.body);
+  const { validationError, isValid } = validateLogin(req.body);
   if (!isValid) {
     return res
       .status(400)
@@ -293,7 +291,7 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const pageOne = async (req, res) => {
-  const { validationError, isValid } = valiadtePageOne(req.body);
+  const { validationError, isValid } = validatePageOne(req.body);
   if (!isValid) {
     return res
       .status(400)
