@@ -61,7 +61,7 @@ export const signup = async (req, res) => {
         );
         const emailSent = await sendEmailVerifyLink(
           req.body,
-          `http://localhost:3400/api/user/email-verify/${jsontoken}`
+          `http://13.235.170.141:3400/api/user/email-verify/${jsontoken}`
         );
         if (!emailSent) {
           return res.status(400).json({
@@ -155,7 +155,7 @@ export const resendEmailLink = async (req, res) => {
           req.decoded = decoded;
           const emailSent = await sendEmailVerifyLink(
             { id: req.decoded.result.id, email: req.decoded.result.email },
-            `http://localhost:3400/user/api/email-verify/${slicedToken}`
+            `http://13.235.170.141:3400/user/api/email-verify/${slicedToken}`
           );
           if (!emailSent) {
             return res.status(400).json({
@@ -213,7 +213,7 @@ export const login = async (req, res) => {
       );
       const emailSent = await sendEmailVerifyLink(
         req.body,
-        `http://localhost:3400/api/user/email-verify/${jsontoken}`
+        `http://13.235.170.141:3400/api/user/email-verify/${jsontoken}`
       );
       if (!emailSent) {
         return res.status(400).json({
