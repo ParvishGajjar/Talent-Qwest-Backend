@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { notEmpty } from "./checkempty";
 
-export const valiadtePageOne = (data) => {
+export const validatePageOne = (data) => {
   var isValid = false;
   var validationError = "";
   var nameregex = /^[A-Za-z0-9]*$/g;
