@@ -1,7 +1,6 @@
 import { validateEmail } from "./checkempty";
 
 export const validateLogin = (data) => {
-  console.log("validate login")
   var isValid = false;
   var validationError = "";
   if (!data.email.length) {
