@@ -1,30 +1,43 @@
 import * as _ from "lodash";
 import { notEmpty } from "./checkempty";
 
-export const validatePageOne = (data) => {
+export const validateSignUpTwo = (data) => {
   var isValid = false;
   var validationError = "";
-  var nameregex = /^[A-Za-z0-9]*$/g;
+  var nameregex = /^[A-Za-z]*$/g;
+  var phoneregex = /^[0-9]{10}$/;
   if (!data.firstname.length) {
     validationError = "First name should not be empty";
     return { validationError, isValid };
+  } else if (data.firstname.length < 3 && data.firstname.length > 30) {
+    validationError = "First name should be of length 3 to 30";
+    return { validationError, isValid };
   } else if (!nameregex.test(data.firstname)) {
-    validationError = "First name should contain characters a-z, A-Z, 0-9";
+    validationError = "First name should contain characters a-z, A-Z";
     return { validationError, isValid };
   } else if (!data.lastname.length) {
     validationError = "Last name should not be empty";
     return { validationError, isValid };
+  } else if (data.lastname.length < 3 && data.lastname.length > 30) {
+    validationError = "Last name should be of length 3 to 30";
+    return { validationError, isValid };
   } else if (!nameregex.test(data.lastname)) {
-    validationError = "Last name should contain characters a-z, A-Z, 0-9";
+    validationError = "Last name should contain characters a-z, A-Z";
     return { validationError, isValid };
   } else if (notEmpty(data.phoneno)) {
     validationError = "Phone number should not be empty";
     return { validationError, isValid };
+  } else if (!phoneregex.test(data.phoneno)) {
+    validationError = "Phone number should be of 10 digits";
+    return { validationError, isValid };
   } else if (notEmpty(data.dob)) {
-    validationError = "Date of birth should not be empty";
+    validationError = "Date of birth should be selected";
     return { validationError, isValid };
   } else if (!data.address.length) {
     validationError = "Address should not be empty";
+    return { validationError, isValid };
+  } else if (data.address.length < 5 && data.address.length > 80) {
+    validationError = "Address should be of length 5 to 80";
     return { validationError, isValid };
   } else if (notEmpty(data.country)) {
     validationError = "Country should be selected";
