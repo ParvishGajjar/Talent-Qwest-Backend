@@ -5,7 +5,8 @@ import {
   getAllUsers,
   emailVerify,
   signupTwo,
-  resendEmailLink
+  resendEmailLink,
+  signupThree
 } from "./user.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -17,5 +18,5 @@ router.post("/signup-two", isAuthenticated, signupTwo)
 router.post("/signup", signup);
 router.get("/email-verify/:token", emailVerify)
 router.post("/resend-email", resendEmailLink)
-
+router.post("/signup-three", isAuthenticated, signupThree)
 module.exports = router;
