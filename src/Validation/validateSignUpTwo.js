@@ -4,7 +4,7 @@ import { notEmpty } from "./checkempty";
 export const validateSignUpTwo = (data) => {
   var isValid = false;
   var validationError = "";
-  var nameregex = /^[A-Za-z]*$/g;
+  var nameregex = /^[A-Za-z]*$/;
   var phoneregex = /^[0-9]{10}$/;
   if (!data.firstname.length) {
     validationError = "First name should not be empty";
@@ -24,13 +24,13 @@ export const validateSignUpTwo = (data) => {
   } else if (!nameregex.test(data.lastname)) {
     validationError = "Last name should contain characters a-z, A-Z";
     return { validationError, isValid };
-  } else if (notEmpty(data.phoneno)) {
+  } else if (!notEmpty(data.phoneno)) {
     validationError = "Phone number should not be empty";
     return { validationError, isValid };
   } else if (!phoneregex.test(data.phoneno)) {
     validationError = "Phone number should be of 10 digits";
     return { validationError, isValid };
-  } else if (notEmpty(data.dob)) {
+  } else if (!notEmpty(data.dob)) {
     validationError = "Date of birth should be selected";
     return { validationError, isValid };
   } else if (!data.address.length) {
@@ -39,13 +39,13 @@ export const validateSignUpTwo = (data) => {
   } else if (data.address.length < 5 && data.address.length > 80) {
     validationError = "Address should be of length 5 to 80";
     return { validationError, isValid };
-  } else if (notEmpty(data.country)) {
+  } else if (!notEmpty(data.country)) {
     validationError = "Country should be selected";
     return { validationError, isValid };
-  } else if (notEmpty(data.state)) {
+  } else if (!notEmpty(data.state)) {
     validationError = "State should be selected";
     return { validationError, isValid };
-  } else if (notEmpty(data.city)) {
+  } else if (!notEmpty(data.city)) {
     validationError = "City should be selected";
     return { validationError, isValid };
   } else {
