@@ -2,11 +2,9 @@ import { query } from "../index";
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { sendEmailVerifyLink } from "../auth/authentication";
-import {
-  validateSignUp,
-  valiadteLogin,
-  valiadtePageOne,
-} from "../Validation/validatePageOne";
+import { validateSignUpTwo } from "../Validation/validateSignUpTwo";
+import { validateLogin } from "../Validation/validateLogin";
+import { validateSignUp } from "../Validation/validateSignUp";
 import * as jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
@@ -21,7 +19,6 @@ export const signup = async (req, res) => {
   try {
     try {
       await query("begin;");
-      console.log(req.body.email, req.body.password, password);
       const search = await query(
         `select * from user_info where email='${req.body.email}' and is_verified=1;`
       );
@@ -43,6 +40,9 @@ export const signup = async (req, res) => {
         result = await query(
           `insert into user_info (user_name, email, password)
           values ('${req.body.username}','${req.body.email}','${password}');`
+        );
+        await query(
+          `insert into signup_pages (id, signup_one) values (${result.insertId}, 1)`
         );
       }
       if (result.insertId || result.affectedRows) {
@@ -155,7 +155,7 @@ export const resendEmailLink = async (req, res) => {
           req.decoded = decoded;
           const emailSent = await sendEmailVerifyLink(
             { id: req.decoded.result.id, email: req.decoded.result.email },
-            `http://13.235.170.141:3400/user/api/email-verify/${slicedToken}`
+            `http://13.235.170.141:3400/api/user/email-verify/${slicedToken}`
           );
           if (!emailSent) {
             return res.status(400).json({
@@ -187,7 +187,7 @@ export const resendEmailLink = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { validationError, isValid } = valiadteLogin(req.body);
+  const { validationError, isValid } = validateLogin(req.body);
   if (!isValid) {
     return res
       .status(400)
@@ -237,7 +237,7 @@ export const login = async (req, res) => {
       jsontoken = sign({ result: { id: user[0].id } }, "nph101", {
         expiresIn: "2h",
       });
-      const updatetoken = query(
+      const updatetoken = await query(
         `update user_info set token='${jsontoken}' where id='${user[0].id}'`
       );
       if (!updatetoken) {
@@ -247,11 +247,15 @@ export const login = async (req, res) => {
           status: false,
         });
       }
+      const signupPages = await query(
+        `select * from signup_pages where id='${user[0].id}'`
+      );
       return res.status(200).json({
         data: true,
         message: "login successfully",
         token: jsontoken,
         is_verified: 1,
+        signup_pages: signupPages,
         status: true,
       });
     } else {
@@ -271,12 +275,11 @@ export const login = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    console.log(req.user);
     const result = await query(`select * from user_info`);
     if (result) {
       return res.status(200).json({
         data: result,
-        message: "Data fetch",
+        message: "Data fetched",
         status: true,
       });
     } else {
@@ -292,8 +295,8 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const pageOne = async (req, res) => {
-  const { validationError, isValid } = valiadtePageOne(req.body);
+export const signupTwo = async (req, res) => {
+  const { validationError, isValid } = validateSignUpTwo(req.body);
   if (!isValid) {
     return res
       .status(400)
@@ -303,10 +306,17 @@ export const pageOne = async (req, res) => {
     const result = await query(`update user_info set firstname = '${req.body.firstname}', lastname = '${req.body.lastname}',
     phoneno = ${req.body.phoneno}, birthdate='${req.body.dob}', address = '${req.body.address}', country='${req.body.country}'
     , state = '${req.body.state}', city = '${req.body.city}', usertype = 1 where id=${req.user[0].id}`);
+    await query(
+      `update signup_pages set signup_two =1 where id=${req.user[0].id};`
+    );
     if (result.affectedRows) {
       return res
         .status(200)
-        .json({ data: true, message: `Data updated`, status: true });
+        .json({
+          data: true,
+          message: `Data updated`,
+          status: true,
+        });
     } else {
       return res
         .status(400)

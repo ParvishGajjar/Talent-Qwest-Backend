@@ -16,4 +16,4 @@ export const validateLogin = (data) => {
     isValid = true;
     return { validationError, isValid };
   }
-};
+}
