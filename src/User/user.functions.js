@@ -5,6 +5,7 @@ import { sendEmailVerifyLink } from "../auth/authentication";
 import { validateSignUpTwo } from "../Validation/validateSignUpTwo";
 import { validateLogin } from "../Validation/validateLogin";
 import { validateSignUp } from "../Validation/validateSignUp";
+import { validateSignUpThree } from "../Validation/validateSignUpThree";
 import * as jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
@@ -310,13 +311,11 @@ export const signupTwo = async (req, res) => {
       `update signup_pages set signup_two =1 where id=${req.user[0].id};`
     );
     if (result.affectedRows) {
-      return res
-        .status(200)
-        .json({
-          data: true,
-          message: `Data updated`,
-          status: true,
-        });
+      return res.status(200).json({
+        data: true,
+        message: `Data updated`,
+        status: true,
+      });
     } else {
       return res
         .status(400)
@@ -324,6 +323,101 @@ export const signupTwo = async (req, res) => {
     }
   } catch (e) {
     console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const signupThree = async (req, res) => {
+  const { validationError, isValid } = validateSignUpThree(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      await query(`delete from user_skill where user_id=${req.user[0].id}`)
+      if (req.body.skills.new.length) {
+        var newskill = `insert into skill_list (name) values ("${req.body.skills.new[0]}")`;
+        req.body.skills.new.forEach((value, index) => {
+          if (index != 0) {
+            newskill += `, ("${value}")`;
+          }
+        });
+        const result = await query(newskill);
+        req.body.skills.new.forEach(() => {
+          req.body.skills.old.push(result.insertId);
+          result.insertId += 1;
+        });
+      }
+      var insertskill = `insert into user_skill (user_id, skill_id) values (${req.user[0].id},${req.body.skills.old[0]})`;
+      req.body.skills.old.forEach((value, index) => {
+        if (index != 0) {
+          insertskill += `, (${req.user[0].id},${value})`;
+        }
+      });
+      await query(insertskill);
+      await query(`delete from user_hobby where user_id=${req.user[0].id}`)
+      if (req.body.hobbies.new.length) {
+        var newhobbies = `insert into hobby_list (name) values ("${req.body.hobbies.new[0]}")`;
+        req.body.hobbies.new.forEach((value, index) => {
+          if (index != 0) {
+            newhobbies += `, ("${value}")`;
+          }
+        });
+        const result2 = await query(newhobbies);
+        req.body.hobbies.new.forEach(() => {
+          req.body.hobbies.old.push(result2.insertId);
+          result2.insertId += 1;
+        });
+      }
+      var inserthobby = `insert into user_hobby (user_id, hobby_id) values (${req.user[0].id},${req.body.hobbies.old[0]})`;
+      req.body.hobbies.old.forEach((value, index) => {
+        if (index != 0) {
+          inserthobby += `, (${req.user[0].id},${value})`;
+        }
+      });
+      await query(inserthobby);
+      await query(`delete from user_language where user_id=${req.user[0].id}`)
+      if (req.body.languages.new.length) {
+        var newlanguages = `insert into language_list (name) values ("${req.body.languages.new[0]}")`;
+        req.body.languages.new.forEach((value, index) => {
+          if (index != 0) {
+            newlanguages += `, ("${value}")`;
+          }
+        });
+        const result3 = await query(newlanguages);
+        req.body.languages.new.forEach(() => {
+          req.body.languages.old.push(result3.insertId);
+          result3.insertId += 1;
+        });
+      }
+      var insertlanguage = `insert into user_language (user_id, language_id) values (${req.user[0].id},${req.body.languages.old[0]})`;
+      req.body.languages.old.forEach((value, index) => {
+        if (index != 0) {
+          insertlanguage += `, (${req.user[0].id},${value})`;
+        }
+      });
+      await query(insertlanguage);
+      await query(
+        `update signup_pages set signup_three =1 where id=${req.user[0].id};`
+      );
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `Something went wrong`, status: false });
+    }
+  } catch (e) {
+    console.log(`Error rolling back: `, e);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });

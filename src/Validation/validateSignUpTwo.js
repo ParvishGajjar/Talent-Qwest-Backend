@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import { notEmpty } from "./checkempty";
 
 export const validateSignUpTwo = (data) => {
