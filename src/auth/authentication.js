@@ -2,6 +2,7 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 import { query } from "../index";
+import { htmlBody } from "./helper";
 
 export const isAuthenticated = (req, res, next) => {
   let token = req.get("Authorization");
@@ -52,16 +53,12 @@ export const isAuthenticated = (req, res, next) => {
 
 export const sendEmailVerifyLink = async (body, link) => {
   try {
+    var html_body = htmlBody(link);
     var mailOptions = {
       to: body.email,
       subject: "Account Verification Link",
       text: `Link for account verification is ${link}`,
-      html:
-        `<div>` +
-        `<h3>Link for your account verification is ` +
-        `<a href="${link}" target="_blank" title="Account Verified">${link}</a>` +
-        `</h3>` +
-        `</div>`, // html body
+      html: html_body, // html body
     };
     let result = await wrapedSendMail(mailOptions);
     return result;
