@@ -7,6 +7,7 @@ import { validateLogin } from "../Validation/validateLogin";
 import { validateSignUp } from "../Validation/validateSignUp";
 import { validateSignUpThree } from "../Validation/validateSignUpThree";
 import * as jwt from "jsonwebtoken";
+import * as _ from "lodash";
 
 export const signup = async (req, res) => {
   const { validationError, isValid } = validateSignUp(req.body);
@@ -339,7 +340,28 @@ export const signupThree = async (req, res) => {
   try {
     try {
       await query(`begin;`);
-      await query(`delete from user_skill where user_id=${req.user[0].id}`)
+      var findoldskill = await query(
+        `select * from user_skill where user_id=${req.user[0].id}`
+      );
+      var olds = findoldskill.map((value) => {
+        return value.skill_id;
+      });
+      var userSkillToDel = _.difference(olds, req.body.skills.old);
+      req.body.skills.old = _.difference(req.body.skills.old, olds);
+
+      // Deleting Old Skills if not present in set of selected skills by user
+      if (userSkillToDel.length) {
+        var deluserstr = `delete from user_skill where user_id=${req.user[0].id} and (skill_id=${userSkillToDel[0]}`;
+        userSkillToDel.forEach((value, index) => {
+          if (index != 0) {
+            deluserstr += ` or skill_id=${value}`;
+          }
+        });
+        deluserstr += `);`;
+        await query(deluserstr);
+      }
+
+      //Inserting new skills to skill_list
       if (req.body.skills.new.length) {
         var newskill = `insert into skill_list (name) values ("${req.body.skills.new[0]}")`;
         req.body.skills.new.forEach((value, index) => {
@@ -353,14 +375,38 @@ export const signupThree = async (req, res) => {
           result.insertId += 1;
         });
       }
-      var insertskill = `insert into user_skill (user_id, skill_id) values (${req.user[0].id},${req.body.skills.old[0]})`;
-      req.body.skills.old.forEach((value, index) => {
-        if (index != 0) {
-          insertskill += `, (${req.user[0].id},${value})`;
-        }
+      // Inserting selected set of skills(if it was not already in the user_skill)
+      if (req.body.skills.old.length) {
+        var insertskill = `insert into user_skill (user_id, skill_id) values (${req.user[0].id},${req.body.skills.old[0]})`;
+        req.body.skills.old.forEach((value, index) => {
+          if (index != 0) {
+            insertskill += `, (${req.user[0].id},${value})`;
+          }
+        });
+        await query(insertskill);
+      }
+      var findoldhobby = await query(
+        `select * from user_hobby where user_id=${req.user[0].id}`
+      );
+      var oldh = findoldhobby.map((value) => {
+        return value.hobby_id;
       });
-      await query(insertskill);
-      await query(`delete from user_hobby where user_id=${req.user[0].id}`)
+      var userHobbyToDel = _.difference(oldh, req.body.hobbies.old);
+      req.body.hobbies.old = _.difference(req.body.hobbies.old, oldh);
+
+      // Deleting Old Hobbies if not present in set of selected hobbies by user
+      if (userHobbyToDel.length) {
+        var delhobbystr = `delete from user_hobby where user_id=${req.user[0].id} and (hobby_id=${userHobbyToDel[0]}`;
+        userHobbyToDel.forEach((value, index) => {
+          if (index != 0) {
+            delhobbystr += ` or hobby_id=${value}`;
+          }
+        });
+        delhobbystr += `);`;
+        await query(delhobbystr);
+      }
+
+      //Inserting new hobbies to hobby_list
       if (req.body.hobbies.new.length) {
         var newhobbies = `insert into hobby_list (name) values ("${req.body.hobbies.new[0]}")`;
         req.body.hobbies.new.forEach((value, index) => {
@@ -374,14 +420,39 @@ export const signupThree = async (req, res) => {
           result2.insertId += 1;
         });
       }
-      var inserthobby = `insert into user_hobby (user_id, hobby_id) values (${req.user[0].id},${req.body.hobbies.old[0]})`;
-      req.body.hobbies.old.forEach((value, index) => {
-        if (index != 0) {
-          inserthobby += `, (${req.user[0].id},${value})`;
-        }
+
+      // Inserting selected set of hobbies(if it was not already in the user_hobby)
+      if (req.body.hobbies.old.length) {
+        var inserthobby = `insert into user_hobby (user_id, hobby_id) values (${req.user[0].id},${req.body.hobbies.old[0]})`;
+        req.body.hobbies.old.forEach((value, index) => {
+          if (index != 0) {
+            inserthobby += `, (${req.user[0].id},${value})`;
+          }
+        });
+        await query(inserthobby);
+      }
+      var findoldlanguage = await query(
+        `select * from user_language where user_id=${req.user[0].id}`
+      );
+      var oldl = findoldlanguage.map((value) => {
+        return value.language_id;
       });
-      await query(inserthobby);
-      await query(`delete from user_language where user_id=${req.user[0].id}`)
+      var userLanguageToDel = _.difference(oldl, req.body.languages.old);
+      req.body.languages.old = _.difference(req.body.languages.old, oldl);
+     
+      // Deleting Old Languages if not present in set of selected languages by user
+      if (userLanguageToDel.length) {
+        var dellanguagestr = `delete from user_language where user_id=${req.user[0].id} and (language_id=${userLanguageToDel[0]}`;
+        userLanguageToDel.forEach((value, index) => {
+          if (index != 0) {
+            dellanguagestr += ` or language_id=${value}`;
+          }
+        });
+        dellanguagestr += `);`;
+        await query(dellanguagestr);
+      }
+
+      //Inserting new languages to language_list
       if (req.body.languages.new.length) {
         var newlanguages = `insert into language_list (name) values ("${req.body.languages.new[0]}")`;
         req.body.languages.new.forEach((value, index) => {
@@ -395,13 +466,17 @@ export const signupThree = async (req, res) => {
           result3.insertId += 1;
         });
       }
-      var insertlanguage = `insert into user_language (user_id, language_id) values (${req.user[0].id},${req.body.languages.old[0]})`;
-      req.body.languages.old.forEach((value, index) => {
-        if (index != 0) {
-          insertlanguage += `, (${req.user[0].id},${value})`;
-        }
-      });
-      await query(insertlanguage);
+
+      // Inserting selected set of languages(if it was not already in the user_language)
+      if (req.body.languages.old.length) {
+        var insertlanguage = `insert into user_language (user_id, language_id) values (${req.user[0].id},${req.body.languages.old[0]})`;
+        req.body.languages.old.forEach((value, index) => {
+          if (index != 0) {
+            insertlanguage += `, (${req.user[0].id},${value})`;
+          }
+        });
+        await query(insertlanguage);
+      }
       await query(
         `update signup_pages set signup_three =1 where id=${req.user[0].id};`
       );
