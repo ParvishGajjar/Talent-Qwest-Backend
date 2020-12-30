@@ -57,7 +57,7 @@ export const sendEmailVerifyLink = async (body, link) => {
     var mailOptions = {
       to: body.email,
       subject: "Account Verification Link",
-      text: `Link for account verification is ${link}`,
+      text: `Link for your account verification is ${link}`,
       html: html_body, // html body
     };
     let result = await wrapedSendMail(mailOptions);

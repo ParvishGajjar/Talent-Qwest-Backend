@@ -6,6 +6,7 @@ import { validateSignUpTwo } from "../Validation/validateSignUpTwo";
 import { validateLogin } from "../Validation/validateLogin";
 import { validateSignUp } from "../Validation/validateSignUp";
 import { validateSignUpThree } from "../Validation/validateSignUpThree";
+import { validateSignUpFour } from "../Validation/validateSignUpFour";
 import * as jwt from "jsonwebtoken";
 import * as _ from "lodash";
 
@@ -340,9 +341,9 @@ export const signupThree = async (req, res) => {
   try {
     try {
       await query(`begin;`);
-      
+
       // Skills
-      
+
       var findoldskill = await query(
         `select * from user_skill where user_id=${req.user[0].id}`
       );
@@ -509,6 +510,54 @@ export const signupThree = async (req, res) => {
       return res
         .status(400)
         .json({ data: false, message: `Something went wrong`, status: false });
+    }
+  } catch (e) {
+    console.log(`Error rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const signupFour = async (req, res) => {
+  const { validationError, isValid } = validateSignUpFour(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      await query(`delete from user_profile where user_id=${req.user[0].id}`);
+      const result = await query(`insert into user_profile values (${
+        req.user[0].id
+      }, '${req.body.title}', '${req.body.description}',
+    ${req.body.fresher ? 1 : 0},'${!req.body.fresher ? req.body.yoe : 0}');`);
+      await query(
+        `update signup_pages set signup_four =1 where id=${req.user[0].id};`
+      );
+      if (result.affectedRows) {
+        await query(`commit;`);
+        return res
+          .status(200)
+          .json({ data: true, message: `Data upadated`, status: true });
+      } else {
+        await query(`rollback;`);
+        return res
+          .status(400)
+          .json({
+            data: false,
+            message: `Something went wrong`,
+            status: false,
+          });
+      }
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
     }
   } catch (e) {
     console.log(`Error rolling back: `, e);
