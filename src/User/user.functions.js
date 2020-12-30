@@ -340,25 +340,30 @@ export const signupThree = async (req, res) => {
   try {
     try {
       await query(`begin;`);
+      
+      // Skills
+      
       var findoldskill = await query(
         `select * from user_skill where user_id=${req.user[0].id}`
       );
-      var olds = findoldskill.map((value) => {
-        return value.skill_id;
-      });
-      var userSkillToDel = _.difference(olds, req.body.skills.old);
-      req.body.skills.old = _.difference(req.body.skills.old, olds);
-
-      // Deleting Old Skills if not present in set of selected skills by user
-      if (userSkillToDel.length) {
-        var deluserstr = `delete from user_skill where user_id=${req.user[0].id} and (skill_id=${userSkillToDel[0]}`;
-        userSkillToDel.forEach((value, index) => {
-          if (index != 0) {
-            deluserstr += ` or skill_id=${value}`;
-          }
+      if (findoldskill[0]) {
+        var olds = findoldskill.map((value) => {
+          return value.skill_id;
         });
-        deluserstr += `);`;
-        await query(deluserstr);
+        var userSkillToDel = _.difference(olds, req.body.skills.old);
+        req.body.skills.old = _.difference(req.body.skills.old, olds);
+
+        // Deleting Old Skills if not present in set of selected skills by user
+        if (userSkillToDel.length) {
+          var deluserstr = `delete from user_skill where user_id=${req.user[0].id} and (skill_id=${userSkillToDel[0]}`;
+          userSkillToDel.forEach((value, index) => {
+            if (index != 0) {
+              deluserstr += ` or skill_id=${value}`;
+            }
+          });
+          deluserstr += `);`;
+          await query(deluserstr);
+        }
       }
 
       //Inserting new skills to skill_list
@@ -375,6 +380,7 @@ export const signupThree = async (req, res) => {
           result.insertId += 1;
         });
       }
+
       // Inserting selected set of skills(if it was not already in the user_skill)
       if (req.body.skills.old.length) {
         var insertskill = `insert into user_skill (user_id, skill_id) values (${req.user[0].id},${req.body.skills.old[0]})`;
@@ -385,25 +391,30 @@ export const signupThree = async (req, res) => {
         });
         await query(insertskill);
       }
+
+      // Hobbies
+
       var findoldhobby = await query(
         `select * from user_hobby where user_id=${req.user[0].id}`
       );
-      var oldh = findoldhobby.map((value) => {
-        return value.hobby_id;
-      });
-      var userHobbyToDel = _.difference(oldh, req.body.hobbies.old);
-      req.body.hobbies.old = _.difference(req.body.hobbies.old, oldh);
-
-      // Deleting Old Hobbies if not present in set of selected hobbies by user
-      if (userHobbyToDel.length) {
-        var delhobbystr = `delete from user_hobby where user_id=${req.user[0].id} and (hobby_id=${userHobbyToDel[0]}`;
-        userHobbyToDel.forEach((value, index) => {
-          if (index != 0) {
-            delhobbystr += ` or hobby_id=${value}`;
-          }
+      if (findoldhobby[0]) {
+        var oldh = findoldhobby.map((value) => {
+          return value.hobby_id;
         });
-        delhobbystr += `);`;
-        await query(delhobbystr);
+        var userHobbyToDel = _.difference(oldh, req.body.hobbies.old);
+        req.body.hobbies.old = _.difference(req.body.hobbies.old, oldh);
+
+        // Deleting Old Hobbies if not present in set of selected hobbies by user
+        if (userHobbyToDel.length) {
+          var delhobbystr = `delete from user_hobby where user_id=${req.user[0].id} and (hobby_id=${userHobbyToDel[0]}`;
+          userHobbyToDel.forEach((value, index) => {
+            if (index != 0) {
+              delhobbystr += ` or hobby_id=${value}`;
+            }
+          });
+          delhobbystr += `);`;
+          await query(delhobbystr);
+        }
       }
 
       //Inserting new hobbies to hobby_list
@@ -431,25 +442,31 @@ export const signupThree = async (req, res) => {
         });
         await query(inserthobby);
       }
+
+      // Languages
+
       var findoldlanguage = await query(
         `select * from user_language where user_id=${req.user[0].id}`
       );
-      var oldl = findoldlanguage.map((value) => {
-        return value.language_id;
-      });
-      var userLanguageToDel = _.difference(oldl, req.body.languages.old);
-      req.body.languages.old = _.difference(req.body.languages.old, oldl);
-     
-      // Deleting Old Languages if not present in set of selected languages by user
-      if (userLanguageToDel.length) {
-        var dellanguagestr = `delete from user_language where user_id=${req.user[0].id} and (language_id=${userLanguageToDel[0]}`;
-        userLanguageToDel.forEach((value, index) => {
-          if (index != 0) {
-            dellanguagestr += ` or language_id=${value}`;
-          }
+
+      if (findoldlanguage[0]) {
+        var oldl = findoldlanguage.map((value) => {
+          return value.language_id;
         });
-        dellanguagestr += `);`;
-        await query(dellanguagestr);
+        var userLanguageToDel = _.difference(oldl, req.body.languages.old);
+        req.body.languages.old = _.difference(req.body.languages.old, oldl);
+
+        // Deleting Old Languages if not present in set of selected languages by user
+        if (userLanguageToDel.length) {
+          var dellanguagestr = `delete from user_language where user_id=${req.user[0].id} and (language_id=${userLanguageToDel[0]}`;
+          userLanguageToDel.forEach((value, index) => {
+            if (index != 0) {
+              dellanguagestr += ` or language_id=${value}`;
+            }
+          });
+          dellanguagestr += `);`;
+          await query(dellanguagestr);
+        }
       }
 
       //Inserting new languages to language_list
@@ -477,6 +494,8 @@ export const signupThree = async (req, res) => {
         });
         await query(insertlanguage);
       }
+
+      // Updating signup pages info
       await query(
         `update signup_pages set signup_three =1 where id=${req.user[0].id};`
       );
