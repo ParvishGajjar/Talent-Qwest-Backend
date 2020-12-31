@@ -10,7 +10,8 @@ import {
   getHobbies,
   getServices,
   getLanguages,
-  getQualifications
+  getQualifications,
+  getFresherOrNot
 } from "./prefetch.functions";
 var router = express.Router();
 
@@ -23,5 +24,6 @@ router.get('/getservices', getServices)
 router.get("/gethobbies", getHobbies)
 router.get('/getlanguages', getLanguages)
 router.get('/getqualifications', getQualifications)
+router.get('/getfresherornot', isAuthenticated,getFresherOrNot)
 
 module.exports = router;

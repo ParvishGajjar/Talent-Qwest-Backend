@@ -15,7 +15,29 @@ export const getCity = async (req, res) => {
           status: true,
         });
       } else {
-        throw "Couldn't Fetch Cities";
+        const result = await query(`select * from states where id=${sid}`);
+        if (result[0].name.length) {
+          const result1 = await query(
+            `insert into cities (name,state_id) values ("${result[0].name}",${sid})`
+          );
+          if (result1.insertId) {
+            return res.status(200).json({
+              data: [
+                {
+                  id: result1.insertId,
+                  name: result[0].name,
+                  state_id: sid,
+                },
+              ],
+              message: `City fetched`,
+              status: true,
+            });
+          } else {
+            throw `Something went wrong`;
+          }
+        } else {
+          throw `Something went wrong`;
+        }
       }
     } else {
       throw "Invalid StateID";
@@ -43,7 +65,29 @@ export const getState = async (req, res) => {
           status: true,
         });
       } else {
-        throw "Couldn't Fetch States.";
+        const result = await query(`select * from countries where id=${cid}`);
+        if (result[0].name.length) {
+          const result1 = await query(
+            `insert into states (name,country_id) values ("${result[0].name}",${cid})`
+          );
+          if (result1.insertId) {
+            return res.status(200).json({
+              data: [
+                {
+                  id: result1.insertId,
+                  name: result[0].name,
+                  country_id: cid,
+                },
+              ],
+              message: `State fetched`,
+              status: true,
+            });
+          } else {
+            throw `Something went wrong`;
+          }
+        } else {
+          throw `Something went wrong`;
+        }
       }
     } else {
       throw "Invalid CountryID";
@@ -182,13 +226,11 @@ export const getQualifications = async (req, res) => {
   try {
     const result = await query(`select * from qualifcation_list;`);
     if (result[0]) {
-      return res
-        .status(200)
-        .json({
-          data: result,
-          message: `Qualifications fetched`,
-          status: true,
-        });
+      return res.status(200).json({
+        data: result,
+        message: `Qualifications fetched`,
+        status: true,
+      });
     } else {
       return res
         .status(404)
@@ -202,3 +244,26 @@ export const getQualifications = async (req, res) => {
   }
 };
 
+export const getFresherOrNot = async (req, res) => {
+  try {
+    const result = await query(
+      `select fresher from user_profile where user_id=${req.user[0].id}`
+    );
+    if (result[0]) {
+      return res.status(200).json({
+        data: result,
+        message: `Fresher or not fetched`,
+        status: true,
+      });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No data found`, status: true });
+    }
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
