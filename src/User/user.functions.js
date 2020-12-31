@@ -569,7 +569,6 @@ export const signupFive = async (req, res) => {
             }","${value.description}","${value.link ? value.link : 0}")`;
           }
         });
-        console.log(insertPatent);
         await query(insertPatent);
         await query(
           `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
@@ -582,6 +581,7 @@ export const signupFive = async (req, res) => {
         await query(
           `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
         );
+        await query(`commit;`)
         return res
           .status(200)
           .json({ data: true, message: `Data updated`, status: true });
