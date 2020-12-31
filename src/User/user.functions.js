@@ -7,6 +7,7 @@ import { validateLogin } from "../Validation/validateLogin";
 import { validateSignUp } from "../Validation/validateSignUp";
 import { validateSignUpThree } from "../Validation/validateSignUpThree";
 import { validateSignUpFour } from "../Validation/validateSignUpFour";
+import { validateSignUpFive } from "../Validation/validateSignUpFive";
 import * as jwt from "jsonwebtoken";
 import * as _ from "lodash";
 
@@ -276,28 +277,6 @@ export const login = async (req, res) => {
   }
 };
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const result = await query(`select * from user_info`);
-    if (result) {
-      return res.status(200).json({
-        data: result,
-        message: "Data fetched",
-        status: true,
-      });
-    } else {
-      return res
-        .status(404)
-        .json({ data: [], message: `No user found`, status: true });
-    }
-  } catch (e) {
-    console.log(e);
-    return res
-      .status(400)
-      .json({ data: false, message: `fail`, status: false });
-  }
-};
-
 export const signupTwo = async (req, res) => {
   const { validationError, isValid } = validateSignUpTwo(req.body);
   if (!isValid) {
@@ -544,13 +523,68 @@ export const signupFour = async (req, res) => {
           .json({ data: true, message: `Data upadated`, status: true });
       } else {
         await query(`rollback;`);
+        return res.status(400).json({
+          data: false,
+          message: `Something went wrong`,
+          status: false,
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Error rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const signupFive = async (req, res) => {
+  const { validationError, isValid } = validateSignUpFive(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
+  try {
+    try {
+      await query(`begin`);
+      await query(`delete from user_patent where user_id=${req.user[0].id}`);
+      if (req.body[0].number) {
+        var insertPatent = `insert into user_patent values (${
+          req.user[0].id
+        },"${req.body[0].number}",
+        "${req.body[0].name}","${req.body[0].description}","${
+          req.body[0].link ? req.body[0].link : 0
+        }")`;
+        req.body.forEach((value, index) => {
+          if (index != 0 && value.number != "") {
+            insertPatent += `, (${req.user[0].id},"${value.number}","${
+              value.name
+            }","${value.description}","${value.link ? value.link : 0}")`;
+          }
+        });
+        console.log(insertPatent);
+        await query(insertPatent);
+        await query(
+          `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
+        );
+        await query(`commit;`);
         return res
-          .status(400)
-          .json({
-            data: false,
-            message: `Something went wrong`,
-            status: false,
-          });
+          .status(200)
+          .json({ data: true, message: `Data updated`, status: true });
+      } else {
+        await query(
+          `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
+        );
+        return res
+          .status(200)
+          .json({ data: true, message: `Data updated`, status: true });
       }
     } catch (e) {
       console.log(e);
