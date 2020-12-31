@@ -1,25 +1,25 @@
 /* eslint-disable no-undef */
 import {
   signup,
-  login,
-  getAllUsers,
-  emailVerify,
-  signupTwo,
   resendEmailLink,
+  emailVerify,
+  login,
+  signupTwo,
   signupThree,
   signupFour,
+  signupFive,
 } from "./user.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
 var router = express.Router();
 
-router.post("/login", login);
-router.get("/getusers", isAuthenticated, getAllUsers);
-router.post("/signup-two", isAuthenticated, signupTwo);
 router.post("/signup", signup);
-router.get("/email-verify/:token", emailVerify);
 router.post("/resend-email", resendEmailLink);
+router.get("/email-verify/:token", emailVerify);
+router.post("/login", login);
+router.post("/signup-two", isAuthenticated, signupTwo);
 router.post("/signup-three", isAuthenticated, signupThree);
 router.post("/signup-four", isAuthenticated, signupFour);
+router.post("/signup-five", isAuthenticated, signupFive);
 
 module.exports = router;
