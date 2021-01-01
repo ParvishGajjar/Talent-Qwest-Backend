@@ -15,7 +15,7 @@ export const validateSignUpFour = (body) => {
     validationError = "Select whether you are a fresher or not";
     return { validationError, isValid };
   } else if (body.fresher === 0) {
-    if (!body.yoe.length) {
+    if (!body.yoe) {
       validationError = "Experience should be selected";
       return { validationError, isValid };
     } else {
@@ -23,7 +23,7 @@ export const validateSignUpFour = (body) => {
       return { validationError, isValid };
     }
   } else if (body.fresher === 1) {
-    if (body.yoe.length) {
+    if (body.yoe) {
       validationError = "Something went wrong";
       return { validationError, isValid };
     } else {
