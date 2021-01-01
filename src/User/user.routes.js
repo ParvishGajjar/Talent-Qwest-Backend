@@ -8,6 +8,10 @@ import {
   signupThree,
   signupFour,
   signupFive,
+  signupSix,
+  signupSeven,
+  signupEight,
+  signupNine,
 } from "./user.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -21,5 +25,9 @@ router.post("/signup-two", isAuthenticated, signupTwo);
 router.post("/signup-three", isAuthenticated, signupThree);
 router.post("/signup-four", isAuthenticated, signupFour);
 router.post("/signup-five", isAuthenticated, signupFive);
+router.post("/signup-six", isAuthenticated, signupSix);
+router.post("/signup-seven", isAuthenticated, signupSeven);
+router.post("/signup-eight", isAuthenticated, signupEight);
+router.post("/signup-nine", isAuthenticated, signupNine);
 
 module.exports = router;
