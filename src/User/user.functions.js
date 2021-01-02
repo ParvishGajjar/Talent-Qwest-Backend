@@ -11,6 +11,7 @@ import { validateSignUpThree } from "../Validation/validateSignUpThree";
 import { validateSignUpFour } from "../Validation/validateSignUpFour";
 import { validateSignUpFive } from "../Validation/validateSignUpFive";
 import { validateSignUpSix } from "../Validation/validateSignUpSix";
+import { validateSignUpSeven } from "../Validation/validateSignUpSeven";
 import { validateSignUpEight } from "../Validation/validateSignUpEight";
 import { validateSignUpNine } from "../Validation/validateSignUpNine";
 
@@ -652,11 +653,44 @@ export const signupSix = async (req, res) => {
 };
 
 export const signupSeven = async (req, res) => {
-  try {
+  const { validationError, isValid } = validateSignUpSeven(req.body);
+  if (!isValid) {
     return res
-      .status(200)
-      .json({ data: true, message: `API in development phase`, status: true });
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
+  try {
+    try {
+      await query(`begin`);
+      await query(`delete from user_work where user_id=${req.user[0].id}`);
+      if (req.body[0].company_name) {
+        var insertWork = `insert into user_work values (${req.user[0].id},"${req.body[0].company_name}","${req.body[0].start_date}",
+        "${req.body[0].end_date}","${req.body[0].description}",
+        "${req.body[0].contact_name}","${req.body[0].contact_email}","${req.body[0].job_title}")`;
+        req.body.forEach((value, index) => {
+          if (index != 0 && value.company_name != "") {
+            insertWork += `, (${req.user[0].id},"${req.body[0].company_name}","${req.body[0].start_date}","${req.body[0].end_date}",
+            "${req.body[0].description}","${req.body[0].contact_name}","${req.body[0].contact_email}","${req.body[0].job_title}")`;
+          }
+        });
+        await query(insertWork);
+      }
+      await query(
+        `update signup_pages set signup_seven = 1 where id=${req.user[0].id};`
+      );
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
   } catch (e) {
+    console.log(`Error rolling back: `, e);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
@@ -691,22 +725,14 @@ export const signupEight = async (req, res) => {
           }
         });
         await query(insertPatent);
-        await query(
-          `update signup_pages set signup_eight = 1 where id=${req.user[0].id};`
-        );
-        await query(`commit;`);
-        return res
-          .status(200)
-          .json({ data: true, message: `Data updated`, status: true });
-      } else {
-        await query(
-          `update signup_pages set signup_eight = 1 where id=${req.user[0].id};`
-        );
-        await query(`commit;`);
-        return res
-          .status(200)
-          .json({ data: true, message: `Data updated`, status: true });
       }
+      await query(
+        `update signup_pages set signup_eight = 1 where id=${req.user[0].id};`
+      );
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
     } catch (e) {
       console.log(e);
       await query(`rollback;`);
@@ -734,7 +760,7 @@ export const signupNine = async (req, res) => {
       await query(`begin`);
       await query(`delete from user_project where user_id=${req.user[0].id}`);
       if (req.body[0].name) {
-        var insertPatent = `insert into user_project (${req.user[0].id},"${
+        var insertProject = `insert into user_project values (${req.user[0].id},"${
           req.body[0].name
         }",
         "${req.body[0].description}","${
@@ -742,30 +768,22 @@ export const signupNine = async (req, res) => {
         }",${req.body[0].duration},${req.body[0].duration_unit})`;
         req.body.forEach((value, index) => {
           if (index != 0 && value.name != "") {
-            insertPatent += `, (${req.user[0].id},"${value.name}","${
+            insertProject += `, (${req.user[0].id},"${value.name}","${
               value.description
             }","${value.link ? value.link : 0}",${req.body[0].duration},${
               req.body[0].duration_unit
             })`;
           }
         });
-        await query(insertPatent);
-        await query(
-          `update signup_pages set signup_nine = 1 where id=${req.user[0].id};`
-        );
-        await query(`commit;`);
-        return res
-          .status(200)
-          .json({ data: true, message: `Data updated`, status: true });
-      } else {
-        await query(
-          `update signup_pages set signup_nine = 1 where id=${req.user[0].id};`
-        );
-        await query(`commit;`);
-        return res
-          .status(200)
-          .json({ data: true, message: `Data updated`, status: true });
+        await query(insertProject);
       }
+      await query(
+        `update signup_pages set signup_nine = 1 where id=${req.user[0].id};`
+      );
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
     } catch (e) {
       console.log(e);
       await query(`rollback;`);
