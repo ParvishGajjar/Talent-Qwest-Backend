@@ -574,22 +574,14 @@ export const signupFive = async (req, res) => {
           }
         });
         await query(insertPatent);
-        await query(
-          `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
-        );
-        await query(`commit;`);
-        return res
-          .status(200)
-          .json({ data: true, message: `Data updated`, status: true });
-      } else {
-        await query(
-          `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
-        );
-        await query(`commit;`);
-        return res
-          .status(200)
-          .json({ data: true, message: `Data updated`, status: true });
       }
+      await query(
+        `update signup_pages set signup_five = 1 where id=${req.user[0].id};`
+      );
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
     } catch (e) {
       console.log(e);
       await query(`rollback;`);
@@ -760,9 +752,9 @@ export const signupNine = async (req, res) => {
       await query(`begin`);
       await query(`delete from user_project where user_id=${req.user[0].id}`);
       if (req.body[0].name) {
-        var insertProject = `insert into user_project values (${req.user[0].id},"${
-          req.body[0].name
-        }",
+        var insertProject = `insert into user_project values (${
+          req.user[0].id
+        },"${req.body[0].name}",
         "${req.body[0].description}","${
           req.body[0].link ? req.body[0].link : 0
         }",${req.body[0].duration},${req.body[0].duration_unit})`;
