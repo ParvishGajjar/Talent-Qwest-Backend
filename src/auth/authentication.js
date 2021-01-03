@@ -12,7 +12,7 @@ export const isAuthenticated = (req, res, next) => {
       token = token.slice(7);
       jwt.verify(token, "nph101", async (err, decoded) => {
         if (err) {
-          return res.json({
+          return res.status(401).json({
             data: false,
             message: "Invalid Token...",
             isValidToken: false,
