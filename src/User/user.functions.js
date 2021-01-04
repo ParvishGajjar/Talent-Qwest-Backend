@@ -526,7 +526,7 @@ export const signupFour = async (req, res) => {
         await query(`commit;`);
         return res
           .status(200)
-          .json({ data: true, message: `Data upadated`, status: true });
+          .json({ data: true, message: `Data updated`, status: true });
       } else {
         await query(`rollback;`);
         return res.status(400).json({
