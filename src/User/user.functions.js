@@ -516,7 +516,9 @@ export const signupFour = async (req, res) => {
       const result = await query(`insert into user_profile values (${
         req.user[0].id
       }, '${req.body.title}', '${req.body.description}',
-    ${req.body.fresher ? 1 : 0},${!req.body.fresher ? req.body.yoe : 0});`);
+    ${req.body.fresher ? 1 : 0},${!req.body.fresher ? req.body.yoe : 0},${
+        req.body.fresher ? req.body.has_done_internship : 0
+      });`);
       await query(
         `update signup_pages set signup_four =1 where id=${req.user[0].id};`
       );

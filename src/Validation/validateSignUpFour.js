@@ -18,13 +18,19 @@ export const validateSignUpFour = (body) => {
     if (!body.yoe) {
       validationError = "Experience should be selected";
       return { validationError, isValid };
-    } else {
+    } else if(body.has_done_internship !== ''){
+      validationError = "Something went wrong";
+      return { validationError, isValid };
+    }else {
       isValid = true;
       return { validationError, isValid };
     }
   } else if (body.fresher === 1) {
     if (body.yoe) {
       validationError = "Something went wrong";
+      return { validationError, isValid };
+    } else if (body.has_done_internship === null || body.has_done_internship === '') {
+      validationError = "Select whether you have done internship or not";
       return { validationError, isValid };
     } else {
       isValid = true;
