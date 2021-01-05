@@ -19,9 +19,15 @@ export const validateSignUpSix = (data) => {
     }`;
     return { validationError, isValid };
   } else if (
-    !(data.qualification.old[0] || data.qualification.new.length)
+    !(data.qualification.old.length || data.qualification.new.length)
   ) {
     validationError = "Qualification is required";
+    return { validationError, isValid };
+  } else if (
+    data.qualification.old.length + data.qualification.new.length !==
+    1
+  ) {
+    validationError = "Only 1 qualification should be selected";
     return { validationError, isValid };
   } else if (!data.cgpa.length) {
     validationError = "CGPA is required";
