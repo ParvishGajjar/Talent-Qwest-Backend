@@ -658,13 +658,25 @@ export const signupSeven = async (req, res) => {
       await query(`begin`);
       await query(`delete from user_work where user_id=${req.user[0].id}`);
       if (req.body[0].company_name) {
-        var insertWork = `insert into user_work values (${req.user[0].id},"${req.body[0].company_name}","${req.body[0].start_date}",
-        "${req.body[0].end_date}","${req.body[0].description}",
-        "${req.body[0].contact_name}","${req.body[0].contact_email}","${req.body[0].job_title}")`;
+        var insertWork = `insert into user_work values (${req.user[0].id},"${
+          req.body[0].company_name
+        }","${req.body[0].start_date}",
+        "${req.body[0].end_date}","${
+          req.body[0].description
+        }",
+        "${req.body[0].contact_name}","${req.body[0].contact_email}","${
+          req.body[0].job_title
+        }","${req.body[0].company_url}")`;
         req.body.forEach((value, index) => {
           if (index != 0 && value.company_name != "") {
-            insertWork += `, (${req.user[0].id},"${req.body[0].company_name}","${req.body[0].start_date}","${req.body[0].end_date}",
-            "${req.body[0].description}","${req.body[0].contact_name}","${req.body[0].contact_email}","${req.body[0].job_title}")`;
+            insertWork += `, (${req.user[0].id},"${value.company_name}","${
+              value.start_date
+            }","${value.end_date}",
+            "${value.description}","${value.contact_name}","${
+              value.contact_email
+            }","${value.job_title}","${
+              value.company_url
+            }")`;
           }
         });
         await query(insertWork);
