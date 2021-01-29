@@ -3,14 +3,15 @@ import express from "express";
 // import * as api from './apifunctions.js'
 import mysql from "mysql";
 const util = require("util");
-var cors = require('cors');
+var cors = require("cors");
 var app = express();
 app.use(express.json());
-app.use(cors())
-require('dotenv').config()
+app.use(cors());
+require("dotenv").config();
 
 const userroutes = require("./User/user.routes");
 const prefetchroutes = require("./Prefetch/prefetch.routes");
+const roundsroutes = require("./QualifierRounds/rounds.routes");
 
 var connection = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -34,6 +35,7 @@ export const query = util.promisify(connection.query).bind(connection);
 
 app.use("/api/user", userroutes);
 app.use("/api/prefetch", prefetchroutes);
+app.use("/api/qualifying-rounds", roundsroutes);
 
 app.listen(3400, (err) => {
   if (err) {
