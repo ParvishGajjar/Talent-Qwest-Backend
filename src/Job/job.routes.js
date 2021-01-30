@@ -11,8 +11,8 @@ import { isAuthenticated } from "../auth/authentication.js";
 var router = express.Router();
 
 router.post("/apply-for-job/:jobId", isAuthenticated, applyForJob);
-router.post("/open-job", isAuthenticated, openJob);
-router.post("/closed-job", isAuthenticated, closedJob);
-router.post("/applied-job", isAuthenticated, appliedJob);
+router.get("/open-job", isAuthenticated, openJob);
+router.get("/closed-job", isAuthenticated, closedJob);
+router.get("/applied-job", isAuthenticated, appliedJob);
 
 module.exports = router;
