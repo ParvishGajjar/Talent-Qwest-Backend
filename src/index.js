@@ -12,6 +12,7 @@ require("dotenv").config();
 const userroutes = require("./User/user.routes");
 const prefetchroutes = require("./Prefetch/prefetch.routes");
 const roundsroutes = require("./QualifierRounds/rounds.routes");
+const jobroutes = require("./Job/job.routes");
 
 var connection = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -36,6 +37,7 @@ export const query = util.promisify(connection.query).bind(connection);
 app.use("/api/user", userroutes);
 app.use("/api/prefetch", prefetchroutes);
 app.use("/api/qualifying-rounds", roundsroutes);
+app.use("/api/job", jobroutes);
 
 app.listen(3400, (err) => {
   if (err) {
