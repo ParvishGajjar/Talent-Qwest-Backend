@@ -11,7 +11,8 @@ import {
   getServices,
   getLanguages,
   getQualifications,
-  getFresherOrNot
+  getFresherOrNot,
+  viewMyProfile
 } from "./prefetch.functions";
 var router = express.Router();
 
@@ -25,5 +26,6 @@ router.get("/gethobbies", getHobbies)
 router.get('/getlanguages', getLanguages)
 router.get('/getqualifications', getQualifications)
 router.get('/getfresherornot', isAuthenticated,getFresherOrNot)
+router.get('/view-profile/me', isAuthenticated, viewMyProfile)
 
 module.exports = router;
