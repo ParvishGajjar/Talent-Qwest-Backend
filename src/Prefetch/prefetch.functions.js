@@ -296,7 +296,8 @@ export const viewMyProfile = async (req, res) => {
       `select * from user_certification where user_id=${req.user[0].id};`
     );
     const user_education = await query(
-      `select * from user_education where user_id=${req.user[0].id};`
+      `select * from user_education left join qualifcation_list on user_education.qualification_id = qualifcation_list.id 
+      where user_id=${req.user[0].id};`
     );
     const user_patent = await query(
       `select * from user_patent where user_id=${req.user[0].id};`
