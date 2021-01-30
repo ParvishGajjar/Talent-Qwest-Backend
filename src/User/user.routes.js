@@ -4,6 +4,7 @@ import {
   resendEmailLink,
   emailVerify,
   login,
+  logout,
   signupTwo,
   signupThree,
   signupFour,
@@ -21,6 +22,7 @@ router.post("/signup", signup);
 router.post("/resend-email", resendEmailLink);
 router.get("/email-verify/:token", emailVerify);
 router.post("/login", login);
+router.post("/logout", isAuthenticated, logout);
 router.post("/signup-two", isAuthenticated, signupTwo);
 router.post("/signup-three", isAuthenticated, signupThree);
 router.post("/signup-four", isAuthenticated, signupFour);

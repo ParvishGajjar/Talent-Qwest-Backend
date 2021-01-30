@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import { query } from "../index";
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
+import { localStorage } from "../auth/localstorage";
 import { sendEmailVerifyLink } from "../auth/authentication";
 import { validateSignUpTwo } from "../Validation/validateSignUpTwo";
 import { validateLogin } from "../Validation/validateLogin";
@@ -270,6 +271,35 @@ export const login = async (req, res) => {
       return res.status(401).json({
         data: false,
         message: "Invalid email or password",
+        status: false,
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    const result = await query(
+      `update user_info set token='' where id=${req.user[0].id}`
+    );
+    if (result.affectedRows) {
+      if (localStorage.getItem("JobID")) {
+        localStorage.removeItem("JobID");
+      }
+      return res.status(200).json({
+        data: true,
+        message: "logout successfull",
+        status: true,
+      });
+    } else {
+      return res.status(400).json({
+        data: false,
+        message: "Something went wrong",
         status: false,
       });
     }
