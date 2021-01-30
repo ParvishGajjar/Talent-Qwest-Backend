@@ -289,7 +289,7 @@ export const viewMyProfile = async (req, res) => {
      left join language_list on user_language.language_id=language_list.id
      where user_language.user_id=${req.user[0].id}
      group by user_language.user_id;`);
-    const user_projects = await query(`select user_project.*, duration_unit.name from user_project 
+    const user_projects = await query(`select user_project.*, duration_unit.name as duration_name from user_project 
      left join duration_unit on user_project.d_unit=duration_unit.id
      where user_project.user_id=${req.user[0].id};`);
     const user_certification = await query(
