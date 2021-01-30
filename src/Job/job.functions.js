@@ -79,8 +79,8 @@ export const closedJob = async (req, res) => {
           .json({ data: result, message: `fetched closed jobs`, status: true });
       } else {
         return res
-          .status(400)
-          .json({ data: false, message: `Something went wrong`, status: false });
+          .status(404)
+          .json({ data: [], message: `No closed jobs found`, status: true });
       }
     } catch (e) {
       console.log(e);
@@ -111,8 +111,8 @@ export const closedJob = async (req, res) => {
           .json({ data: result, message: `fetched applied jobs`, status: true });
       } else {
         return res
-          .status(400)
-          .json({ data: false, message: `Something went wrong`, status: false });
+          .status(404)
+          .json({ data: [], message: `No job applied yet`, status: true });
       }
     } catch (e) {
       console.log(e);
