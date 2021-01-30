@@ -267,3 +267,76 @@ export const getFresherOrNot = async (req, res) => {
       .json({ data: false, message: `fail`, status: false });
   }
 };
+
+export const viewMyProfile = async (req, res) => {
+  try {
+    const profile = await query(`select ui.id, ui.firstname, ui.lastname, ui.email, ui.phoneno, ui.birthdate,
+     ui.address, ui.state, ui.city, ui.country, ui.user_name, ui.timestamp, ui.usertype, ui.is_verified, 
+     up.title, up.description, up.fresher, up.yoe, up.has_done_internship
+     from user_info as ui 
+     left join user_profile as up 
+     on ui.id= up.user_id
+     where ui.id=${req.user[0].id};`);
+    const user_skills = await query(`select group_concat(skill_list.name separator '|') as skills from user_skill
+     left join skill_list on user_skill.skill_id=skill_list.id
+     where user_skill.user_id=${req.user[0].id}
+     group by user_skill.user_id;`);
+    const user_hobbies = await query(`select group_concat(hobby_list.name separator '|') as hobbies from user_hobby
+     left join hobby_list on user_hobby.hobby_id=hobby_list.id
+     where user_hobby.user_id=${req.user[0].id}
+     group by user_hobby.user_id;`);
+    const user_languages = await query(`select group_concat(language_list.name separator '|') as languages from user_language
+     left join language_list on user_language.language_id=language_list.id
+     where user_language.user_id=${req.user[0].id}
+     group by user_language.user_id;`);
+    const user_projects = await query(`select user_project.*, duration_unit.name from user_project 
+     left join duration_unit on user_project.d_unit=duration_unit.id
+     where user_project.user_id=${req.user[0].id};`);
+    const user_certification = await query(
+      `select * from user_certification where user_id=${req.user[0].id};`
+    );
+    const user_education = await query(
+      `select * from user_education where user_id=${req.user[0].id};`
+    );
+    const user_patent = await query(
+      `select * from user_patent where user_id=${req.user[0].id};`
+    );
+    const user_work_experience = await query(
+      `select * from user_work where user_id=${req.user[0].id};`
+    );
+    const user_social_media = await query(
+      `select * from user_socialmedia where user_id=${req.user[0].id};`
+    );
+    if (profile[0]) {
+      return res
+        .status(200)
+        .json({
+          data: [
+            {
+              ...profile[0],
+              skills: user_skills,
+              hobbies: user_hobbies,
+              languages: user_languages,
+              education: user_education,
+              projects: user_projects,
+              cetification: user_certification,
+              patents: user_patent,
+              work_experience: user_work_experience,
+              social_media: user_social_media
+            },
+          ],
+          message: `Data fetched`,
+          status: true,
+        });
+    } else {
+      return res
+        .status(404)
+        .json({ data: [], message: `No data found`, status: false });
+    }
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};

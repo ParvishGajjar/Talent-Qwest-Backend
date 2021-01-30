@@ -13,6 +13,7 @@ const userroutes = require("./User/user.routes");
 const prefetchroutes = require("./Prefetch/prefetch.routes");
 const roundsroutes = require("./QualifierRounds/rounds.routes");
 const jobroutes = require("./Job/job.routes");
+const profileroutes = require("./Profile/profile.routes");
 
 var connection = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -38,6 +39,7 @@ app.use("/api/user", userroutes);
 app.use("/api/prefetch", prefetchroutes);
 app.use("/api/qualifying-rounds", roundsroutes);
 app.use("/api/job", jobroutes);
+app.use("/api/profile", profileroutes);
 
 app.listen(3400, (err) => {
   if (err) {
