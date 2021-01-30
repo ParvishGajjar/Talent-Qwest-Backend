@@ -7,8 +7,30 @@ export const getRoundOne = async (req, res) => {
       localStorage.removeItem("JobID");
     }
     localStorage.setItem("JobID", req.params.job_id);
+    const marksone = await query(`select marks from marks_one  
+      where marks_one.id=${
+        req.user[0].id
+      } and marks_one.job_id=${localStorage.getItem("JobID")}`);
+    const jc = await query(
+      `select round_one from job_criteria where id=${localStorage.getItem(
+        "JobID"
+      )}`
+    );
+    var Given = {
+      hasAlreadyGiven: 0,
+      roundOneCriteria: jc[0].round_one || 11,
+      score: null,
+      hasQualfied: 0,
+    };
+    if (marksone[0]) {
+      Given.hasAlreadyGiven = 1;
+      Given.score = marksone[0].marks;
+      if (marksone[0].marks >= Given.roundOneCriteria) {
+        Given.hasQualfied = 1;
+      }
+    }
     return res.status(200).json({
-      data: true,
+      data: [Given],
       message: `Success`,
       status: true,
     });
@@ -83,7 +105,11 @@ export const fetchRoundOne = async (req, res) => {
       where marks_one.id=${
         req.user[0].id
       } and marks_one.job_id=${localStorage.getItem("JobID")}`);
-      const jc= await query(`select round_one from job_criteria where id=${localStorage.getItem("JobID")}`)
+      const jc = await query(
+        `select round_one from job_criteria where id=${localStorage.getItem(
+          "JobID"
+        )}`
+      );
       var Given = {
         hasAlreadyGiven: 0,
         roundOneCriteria: jc[0].round_one || 11,
