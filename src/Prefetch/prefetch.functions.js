@@ -1,6 +1,6 @@
 import { query } from "../index.js";
 import { notEmpty } from "../Validation/checkempty.js";
-// import * as _ from "lodash";
+import { split } from "lodash";
 
 // Functiion to fetch all cities.
 export const getCity = async (req, res) => {
@@ -308,27 +308,63 @@ export const viewMyProfile = async (req, res) => {
     const user_social_media = await query(
       `select * from user_socialmedia where user_id=${req.user[0].id};`
     );
+    const openJob = await query(`select job_post.id, job_post.name, job_post.description, 
+    job_post.salary, job_post.vacancy, job_post.timestamp, job_post.is_open,
+    group_concat(coding_list.name separator '|') as 'Required_Skills' 
+    from job_post 
+    left join job_skill on job_post.id = job_skill.id
+    left join coding_list on job_skill.skill_id = coding_list.id
+    where 
+    job_post.is_open=0 
+    and 
+    job_post.id not in (select user_job.job_id from user_job where user_job.user_id = ${
+      req.user[0].id
+    })
+    group by job_post.id
+    order by timestamp DESC
+    ${req.query.ojlimit ? `limit ${req.query.ojlimit}` : ""};`);
+    openJob.forEach((value) => {
+      value.Required_Skills = split(value.Required_Skills, "|");
+    });
+    const appliedJob = await query(`select job_post.id, job_post.name, job_post.description, 
+    job_post.salary, job_post.vacancy, job_post.timestamp, job_post.is_open,
+    group_concat(coding_list.name separator '|') as 'Required_Skills' 
+    from job_post 
+    left join job_skill on job_post.id = job_skill.id
+    left join coding_list on job_skill.skill_id = coding_list.id
+    where 
+    job_post.is_open=0 
+    and 
+    job_post.id in (select user_job.job_id from user_job where user_job.user_id = ${
+      req.user[0].id
+    })
+    group by job_post.id
+    order by timestamp DESC
+    ${req.query.ajlimit ? `limit ${req.query.ajlimit}` : ""};`);
+    appliedJob.forEach((value) => {
+      value.Required_Skills = split(value.Required_Skills, "|");
+    });
     if (profile[0]) {
-      return res
-        .status(200)
-        .json({
-          data: [
-            {
-              ...profile[0],
-              skills: user_skills,
-              hobbies: user_hobbies,
-              languages: user_languages,
-              education: user_education,
-              projects: user_projects,
-              cetification: user_certification,
-              patents: user_patent,
-              work_experience: user_work_experience,
-              social_media: user_social_media
-            },
-          ],
-          message: `Data fetched`,
-          status: true,
-        });
+      return res.status(200).json({
+        data: [
+          {
+            ...profile[0],
+            skills: user_skills,
+            hobbies: user_hobbies,
+            languages: user_languages,
+            education: user_education,
+            projects: user_projects,
+            cetification: user_certification,
+            patents: user_patent,
+            work_experience: user_work_experience,
+            social_media: user_social_media,
+            open_job: openJob,
+            applied_job: appliedJob,
+          },
+        ],
+        message: `Data fetched`,
+        status: true,
+      });
     } else {
       return res
         .status(404)
