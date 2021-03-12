@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 import {
-  updateOne,
-  updateTwo,
-  updateThree,
-  updateFour,
+  updateBasicInformation,
+  updateLocation,
+  updateProfileData,
+  updateSkillHobbyLanguage,
   updateFive,
   updateSix,
   updateSeven,
@@ -15,10 +15,10 @@ import { isAuthenticated } from "../auth/authentication.js";
 
 var router = express.Router();
 
-router.post("/update-one", isAuthenticated, updateOne);
-router.post("/update-two", isAuthenticated, updateTwo);
-router.post("/update-three", isAuthenticated, updateThree);
-router.post("/update-four", isAuthenticated, updateFour);
+router.post("/update-basic-information", isAuthenticated, updateBasicInformation);
+router.post("/update-location", isAuthenticated, updateLocation);
+router.post("/update-profile-data", isAuthenticated, updateProfileData);
+router.post("/update-skill-hobby-language", isAuthenticated, updateSkillHobbyLanguage);
 router.post("/update-five", isAuthenticated, updateFive);
 router.post("/update-six", isAuthenticated, updateSix);
 router.post("/update-seven", isAuthenticated, updateSeven);
