@@ -1,5 +1,4 @@
 import { notEmpty, validateURL } from "./checkempty";
-import moment from "moment";
 
 export const basicInformation = (data) => {
   var isValid = false;
@@ -75,6 +74,33 @@ export const profileData = (data) => {
     return { validationError, isValid };
   } else if (!data.description.length) {
     validationError = "Profile description shoud not be empty";
+    return { validationError, isValid };
+  } else {
+    isValid = true;
+    return { validationError, isValid };
+  }
+};
+
+export const socialMediaDetails = (data) => {
+  var isValid = false;
+  var validationError = "";
+  if (data.linkedin.length && !validateURL(data.linkedin)) {
+    validationError = "LinkedIn link should be in correct format";
+    return { validationError, isValid };
+  } else if (data.github.length && !validateURL(data.github)) {
+    validationError = "Github link should be in correct format";
+    return { validationError, isValid };
+  } else if (data.medium.length && !validateURL(data.medium)) {
+    validationError = "Medium link should be in correct format";
+    return { validationError, isValid };
+  } else if (data.dribbble.length && !validateURL(data.dribbble)) {
+    validationError = "Dribbble link should be in correct format";
+    return { validationError, isValid };
+  } else if (data.twitter.length && !validateURL(data.twitter)) {
+    validationError = "Twitter link should be in correct format";
+    return { validationError, isValid };
+  } else if (data.instagram.length && !validateURL(data.instagram)) {
+    validationError = "Instagram link should be in correct format";
     return { validationError, isValid };
   } else {
     isValid = true;

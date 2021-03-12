@@ -4,11 +4,12 @@ import {
   updateLocation,
   updateProfileData,
   updateSkillHobbyLanguage,
-  updateFive,
-  updateSix,
-  updateSeven,
-  updateEight,
-  updateNine,
+  updateEducationDetails,
+  updateWorkExperience,
+  updateProjectDetails,
+  updatePatentDetails,
+  updateCertificationDetails,
+  updateSocialMediaDetails
 } from "./profile.functions";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -19,10 +20,11 @@ router.post("/update-basic-information", isAuthenticated, updateBasicInformation
 router.post("/update-location", isAuthenticated, updateLocation);
 router.post("/update-profile-data", isAuthenticated, updateProfileData);
 router.post("/update-skill-hobby-language", isAuthenticated, updateSkillHobbyLanguage);
-router.post("/update-five", isAuthenticated, updateFive);
-router.post("/update-six", isAuthenticated, updateSix);
-router.post("/update-seven", isAuthenticated, updateSeven);
-router.post("/update-eight", isAuthenticated, updateEight);
-router.post("/update-nine", isAuthenticated, updateNine);
+router.post("/update-education-details", isAuthenticated, updateEducationDetails);
+router.post("/update-work-experience", isAuthenticated, updateWorkExperience);
+router.post("/update-project-details", isAuthenticated, updateProjectDetails);
+router.post("/update-patent-details", isAuthenticated, updatePatentDetails);
+router.post("/update-certification-details", isAuthenticated, updateCertificationDetails);
+router.post("/update-socila-media-details", isAuthenticated, updateSocialMediaDetails);
 
 module.exports = router;

@@ -3,8 +3,16 @@ import {
   basicInformation,
   Location,
   profileData,
+  socialMediaDetails
 } from "../Validation/validateUpdateProfile";
-import {validateSignUpThree} from '../Validation/validateSignUpThree'
+import {
+  validateSignUpThree,
+  validateSignUpFive,
+  validateSignUpSix,
+  validateSignUpSeven,
+  validateSignUpEight,
+  validateSignUpNine,
+} from "../Validation/validateSignUp";
 
 export const updateBasicInformation = async (req, res) => {
   const { validationError, isValid } = basicInformation(req.body);
@@ -263,11 +271,6 @@ export const updateSkillHobbyLanguage = async (req, res) => {
         });
         await query(insertlanguage);
       }
-
-      // Updating signup pages info
-      await query(
-        `update signup_pages set signup_three =1 where id=${req.user[0].id};`
-      );
       await query(`commit;`);
       return res
         .status(200)
@@ -287,54 +290,276 @@ export const updateSkillHobbyLanguage = async (req, res) => {
   }
 };
 
-export const updateFive = async (req, res) => {
+export const updateEducationDetails = async (req, res) => {
+  const { validationError, isValid } = validateSignUpSix(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
   try {
+    try {
+      await query(`begin;`);
+      await query(`delete from user_education where user_id=${req.user[0].id}`);
+      if (req.body.qualification.new.length) {
+        const newqual = await query(
+          `insert into quaalifcation_list (name) values ("${req.body.qualification.new[0]}")`
+        );
+        await query(
+          `update user_education set institute_name="${req.body.name}", year_of_passing="${req.body.passing_year}",
+          qualification_id=${newqual[0].insertId}, CGPA="${req.body.cgpa}" where user_id=${req.user[0].id}`
+        );
+      } else {
+        await query(
+          `update user_education set institute_name="${req.body.name}", year_of_passing="${req.body.passing_year}",
+          qualification_id=${req.body.qualification.old[0]}, CGPA="${req.body.cgpa}" where user_id=${req.user[0].id}`
+        );
+      }
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
   } catch (e) {
-    console.log(e);
-    return res.status(400).json({
-      data: false,
-      message: `fail`,
-      status: false,
-    });
+    console.log(`Error rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
   }
 };
-export const updateSix = async (req, res) => {
+export const updateWorkExperience = async (req, res) => {
+  const { validationError, isValid } = validateSignUpSeven(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
   try {
+    try {
+      await query(`begin`);
+      await query(`delete from user_work where user_id=${req.user[0].id}`);
+      if (req.body[0].company_name) {
+        var insertWork = `insert into user_work values (${req.user[0].id},"${req.body[0].company_name}","${req.body[0].start_date}",
+        "${req.body[0].end_date}","${req.body[0].description}",
+        "${req.body[0].contact_name}","${req.body[0].contact_email}","${req.body[0].job_title}","${req.body[0].company_url}")`;
+        req.body.forEach((value, index) => {
+          if (index != 0 && value.company_name != "") {
+            insertWork += `, (${req.user[0].id},"${value.company_name}","${value.start_date}","${value.end_date}",
+            "${value.description}","${value.contact_name}","${value.contact_email}","${value.job_title}","${value.company_url}")`;
+          }
+        });
+        await query(insertWork);
+      }
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
   } catch (e) {
-    console.log(e);
-    return res.status(400).json({
-      data: false,
-      message: `fail`,
-      status: false,
-    });
+    console.log(`Error rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
   }
 };
-export const updateSeven = async (req, res) => {
+export const updateProjectDetails = async (req, res) => {
+  const { validationError, isValid } = validateSignUpNine(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
   try {
+    try {
+      await query(`begin`);
+      await query(`delete from user_project where user_id=${req.user[0].id}`);
+      if (req.body[0].name) {
+        var insertProject = `insert into user_project values (${
+          req.user[0].id
+        },"${req.body[0].name}",
+        "${req.body[0].description}","${
+          req.body[0].link ? req.body[0].link : 0
+        }",${req.body[0].duration},${req.body[0].duration_unit})`;
+        req.body.forEach((value, index) => {
+          if (index != 0 && value.name != "") {
+            insertProject += `, (${req.user[0].id},"${value.name}","${
+              value.description
+            }","${value.link ? value.link : 0}",${value.duration},${
+              value.duration_unit
+            })`;
+          }
+        });
+        await query(insertProject);
+      }
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
   } catch (e) {
-    console.log(e);
-    return res.status(400).json({
-      data: false,
-      message: `fail`,
-      status: false,
-    });
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
   }
 };
 
-export const updateEight = async (req, res) => {
+export const updatePatentDetails = async (req, res) => {
+  const { validationError, isValid } = validateSignUpFive(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
   try {
+    try {
+      await query(`begin`);
+      await query(`delete from user_patent where user_id=${req.user[0].id}`);
+      if (req.body[0].number) {
+        var insertPatent = `insert into user_patent values (${
+          req.user[0].id
+        },"${req.body[0].number}",
+        "${req.body[0].name}","${req.body[0].description}","${
+          req.body[0].link ? req.body[0].link : 0
+        }")`;
+        req.body.forEach((value, index) => {
+          if (index != 0 && value.number != "") {
+            insertPatent += `, (${req.user[0].id},"${value.number}","${
+              value.name
+            }","${value.description}","${value.link ? value.link : 0}")`;
+          }
+        });
+        await query(insertPatent);
+      }
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
   } catch (e) {
-    console.log(e);
-    return res.status(400).json({
-      data: false,
-      message: `fail`,
-      status: false,
-    });
+    console.log(`Error rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
   }
 };
 
-export const updateNine = async (req, res) => {
+export const updateCertificationDetails = async (req, res) => {
+  const { validationError, isValid } = validateSignUpEight(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
   try {
+    try {
+      await query(`begin`);
+      await query(
+        `delete from user_certification where user_id=${req.user[0].id}`
+      );
+      if (req.body[0].name) {
+        var insertPatent = `insert into user_certification values (${
+          req.user[0].id
+        },"${req.body[0].name}",
+        "${req.body[0].description}","${
+          req.body[0].link ? req.body[0].link : 0
+        }")`;
+        req.body.forEach((value, index) => {
+          if (index != 0 && value.name != "") {
+            insertPatent += `, (${req.user[0].id},"${value.name}","${
+              value.description
+            }","${value.link ? value.link : 0}")`;
+          }
+        });
+        await query(insertPatent);
+      }
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Error rolling back: `, e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const updateSocialMediaDetails = async (req, res) => {
+  const { validationError, isValid } = socialMediaDetails(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
+  try {
+    const result = await query(
+      `select * from user_socialmedia where user_id=${req.user[0].id}`
+    );
+    if (result[0].user_id) {
+      const result2 = await query(`update user_socialmedia set linkedin="${req.body.linkedin}", github="${req.body.github}",
+      dribbble="${req.body.dribbble}", medium="${req.body.medium}", twitter="${req.body.twitter}",
+      instagram="${req.body.instagram}" where user_id=${req.user[0].id}`);
+      if (result2.affectedRows) {
+        return res
+          .status(200)
+          .json({ data: true, message: `Data updated`, status: true });
+      } else {
+        return res
+          .status(400)
+          .json({
+            data: false,
+            message: `Something went wrong`,
+            status: false,
+          });
+      }
+    } else {
+      const result3 = await query(`insert into user_socialmedia values (${req.user[0].id},"${req.body.linkedin}",
+        "${req.body.medium}","${req.body.dribbble}","${req.body.github}", "${req.body.instagram}", "${req.body.twitter}")`);
+      if (result3.insertId) {
+        return res
+          .status(200)
+          .json({ data: true, message: `Data updated`, status: true });
+      } else {
+        return res
+          .status(400)
+          .json({
+            data: false,
+            message: `Something went wrong`,
+            status: false,
+          });
+      }
+    }
   } catch (e) {
     console.log(e);
     return res.status(400).json({

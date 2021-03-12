@@ -5,16 +5,18 @@ import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { localStorage } from "../auth/localstorage";
 import { sendEmailVerifyLink } from "../auth/authentication";
-import { validateSignUpTwo } from "../Validation/validateSignUpTwo";
 import { validateLogin } from "../Validation/validateLogin";
-import { validateSignUp } from "../Validation/validateSignUp";
-import { validateSignUpThree } from "../Validation/validateSignUpThree";
-import { validateSignUpFour } from "../Validation/validateSignUpFour";
-import { validateSignUpFive } from "../Validation/validateSignUpFive";
-import { validateSignUpSix } from "../Validation/validateSignUpSix";
-import { validateSignUpSeven } from "../Validation/validateSignUpSeven";
-import { validateSignUpEight } from "../Validation/validateSignUpEight";
-import { validateSignUpNine } from "../Validation/validateSignUpNine";
+import {
+  validateSignUp,
+  validateSignUpTwo,
+  validateSignUpThree,
+  validateSignUpFour,
+  validateSignUpFive,
+  validateSignUpSix,
+  validateSignUpSeven,
+  validateSignUpEight,
+  validateSignUpNine,
+} from "../Validation/validateSignUp";
 
 export const signup = async (req, res) => {
   const { validationError, isValid } = validateSignUp(req.body);
