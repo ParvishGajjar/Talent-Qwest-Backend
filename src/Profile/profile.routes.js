@@ -25,6 +25,6 @@ router.post("/update-work-experience", isAuthenticated, updateWorkExperience);
 router.post("/update-project-details", isAuthenticated, updateProjectDetails);
 router.post("/update-patent-details", isAuthenticated, updatePatentDetails);
 router.post("/update-certification-details", isAuthenticated, updateCertificationDetails);
-router.post("/update-socila-media-details", isAuthenticated, updateSocialMediaDetails);
+router.post("/update-social-media-details", isAuthenticated, updateSocialMediaDetails);
 
 module.exports = router;

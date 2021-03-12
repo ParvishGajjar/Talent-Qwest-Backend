@@ -1,4 +1,5 @@
 import { query } from "../index";
+import * as _ from "lodash";
 import {
   basicInformation,
   Location,
@@ -526,7 +527,7 @@ export const updateSocialMediaDetails = async (req, res) => {
     const result = await query(
       `select * from user_socialmedia where user_id=${req.user[0].id}`
     );
-    if (result[0].user_id) {
+    if (result[0]) {
       const result2 = await query(`update user_socialmedia set linkedin="${req.body.linkedin}", github="${req.body.github}",
       dribbble="${req.body.dribbble}", medium="${req.body.medium}", twitter="${req.body.twitter}",
       instagram="${req.body.instagram}" where user_id=${req.user[0].id}`);
