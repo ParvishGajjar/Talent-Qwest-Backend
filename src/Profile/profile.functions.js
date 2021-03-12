@@ -22,8 +22,8 @@ export const updateBasicInformation = async (req, res) => {
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
-    const result = await query(`update user_info set firstname=${req.body.firstname}, lastname=${req.body.lastname}
-   , dob=${req.body.dob}, address=${req.body.address}, phoneno=${req.body.phoneno} where id=${req.user[0].id}`);
+    const result = await query(`update user_info set firstname="${req.body.firstname}", lastname="${req.body.lastname}"
+   , birthdate="${req.body.dob}", address="${req.body.address}", phoneno="${req.body.phoneno}" where id=${req.user[0].id}`);
     if (result.affectedRows) {
       return res.status(200).json({
         data: true,
@@ -53,8 +53,8 @@ export const updateLocation = async (req, res) => {
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
-    const result = await query(`update user_info set country=${req.body.country}, state=${req.body.state},
-    city=${req.body.city} where id=${req.user[0].id}`);
+    const result = await query(`update user_info set country="${req.body.country}", state="${req.body.state}",
+    city="${req.body.city}" where id=${req.user[0].id}`);
     if (result.affectedRows) {
       return res.status(200).json({
         data: true,
@@ -84,8 +84,8 @@ export const updateProfileData = async (req, res) => {
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
-    const result = await query(`update user_profile set title=${req.body.title}, description=${req.body.description} 
-    where id=${req.user[0].id}`);
+    const result = await query(`update user_profile set title="${req.body.title}", description="${req.body.description}" 
+    where user_id=${req.user[0].id}`);
     if (result.affectedRows) {
       return res.status(200).json({
         data: true,
