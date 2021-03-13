@@ -4,7 +4,9 @@ import {
   closedJob,
   openJob,
   appliedJob,
-  getJobDetails
+  getJobDetails,
+  jobsRoundOne,
+  jobsRoundTwo
 } from "./job.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -16,5 +18,7 @@ router.get("/open-job", isAuthenticated, openJob);
 router.get("/closed-job", isAuthenticated, closedJob);
 router.get("/applied-job", isAuthenticated, appliedJob);
 router.get("/job-details/:jobId", isAuthenticated, getJobDetails)
+router.get("/jobs-round-one", isAuthenticated, jobsRoundOne)
+router.get("/jobs-round-two", isAuthenticated, jobsRoundTwo)
 
 module.exports = router;
