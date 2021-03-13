@@ -19,6 +19,6 @@ router.get("/closed-job", isAuthenticated, closedJob);
 router.get("/applied-job", isAuthenticated, appliedJob);
 router.get("/job-details/:jobId", isAuthenticated, getJobDetails)
 router.get("/jobs-round-one", isAuthenticated, jobsRoundOne)
-router.get("/jobs-round-two", isAuthenticated, jobsRoundTwo)
+// router.get("/jobs-round-two", isAuthenticated, jobsRoundTwo)
 
 module.exports = router;
