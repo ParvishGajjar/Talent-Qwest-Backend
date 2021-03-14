@@ -14,7 +14,9 @@ export const applyForJob = async (req, res) => {
     const result = await query(
       `insert into user_job values (${req.params.jobId},${req.user[0].id})`
     );
-    await query(`insert into user_status (id, job_id) values (${req.user[0].id},${req.params.jobId})`)
+    await query(
+      `insert into user_status (id, job_id) values (${req.user[0].id},${req.params.jobId})`
+    );
     if (result.affectedRows) {
       return res.status(200).json({
         data: true,
@@ -93,7 +95,7 @@ export const closedJob = async (req, res) => {
         .json({ data: result, message: `fetched closed jobs`, status: true });
     } else {
       return res
-        .status(404)
+        .status(200)
         .json({ data: [], message: `No closed jobs found`, status: true });
     }
   } catch (e) {
@@ -128,7 +130,7 @@ export const appliedJob = async (req, res) => {
         .json({ data: result, message: `fetched applied jobs`, status: true });
     } else {
       return res
-        .status(404)
+        .status(200)
         .json({ data: [], message: `No job applied yet`, status: true });
     }
   } catch (e) {
@@ -152,31 +154,31 @@ export const getJobDetails = async (req, res) => {
     where job_post.id=${req.params.jobId}`);
     var applicants = await query(`select job_id, count(*) as applicants from user_job where job_id=${req.params.jobId}
      group by job_id`);
-     const alreadyApplied = await query(`select * from user_job 
-     where user_id=${req.user[0].id} and job_id=${req.params.jobId}`)
+    const alreadyApplied = await query(`select * from user_job 
+     where user_id=${req.user[0].id} and job_id=${req.params.jobId}`);
     result.forEach((value) => {
       value.Required_Skills = split(value.Required_Skills, "|");
     });
-    var aa={
-      already_applied: 0
+    var aa = {
+      already_applied: 0,
+    };
+    if (alreadyApplied[0]) {
+      aa.already_applied = 1;
     }
-    if(alreadyApplied[0]){
-      aa.already_applied = 1
-    }
-    if(!applicants[0]){
-      applicants = [{
-        job_id: req.params.jobId,
-        applicants: 0
-      }]
+    if (!applicants[0]) {
+      applicants = [
+        {
+          job_id: req.params.jobId,
+          applicants: 0,
+        },
+      ];
     }
     if (result[0]) {
-      return res
-        .status(200)
-        .json({
-          data: [{ ...result[0], ...applicants[0], ...aa }],
-          message: `fetched job details`,
-          status: true,
-        });
+      return res.status(200).json({
+        data: [{ ...result[0], ...applicants[0], ...aa }],
+        message: `fetched job details`,
+        status: true,
+      });
     } else {
       return res
         .status(404)
@@ -213,10 +215,14 @@ export const jobsRoundOne = async (req, res) => {
     if (result[0]) {
       return res
         .status(200)
-        .json({ data: result, message: `fetched jobs for round one`, status: true });
+        .json({
+          data: result,
+          message: `fetched jobs for round one`,
+          status: true,
+        });
     } else {
       return res
-        .status(404)
+        .status(200)
         .json({ data: [], message: `No round one's`, status: true });
     }
   } catch (e) {
@@ -250,11 +256,39 @@ export const jobsRoundTwo = async (req, res) => {
     if (result[0]) {
       return res
         .status(200)
-        .json({ data: result, message: `fetched jobs for round two`, status: true });
+        .json({
+          data: result,
+          message: `fetched jobs for round two`,
+          status: true,
+        });
     } else {
       return res
-        .status(404)
+        .status(200)
         .json({ data: [], message: `No round two's`, status: true });
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const getUserStatus = async (req, res) => {
+  try {
+    const result = await query(
+      `select * from user_status where id=${req.user[0].id}`
+    );
+    if (result[0]) {
+      return res
+        .status(200)
+        .json({ data: result, message: `fetched user status`, status: true });
+    } else {
+      return res
+        .status(200)
+        .json({ data: [], message: `No user status found`, status: true });
     }
   } catch (e) {
     console.log(e);
