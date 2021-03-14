@@ -14,6 +14,7 @@ export const applyForJob = async (req, res) => {
     const result = await query(
       `insert into user_job values (${req.params.jobId},${req.user[0].id})`
     );
+    await query(`insert into user_status (id, job_id) values (${req.user[0].id},${req.params.jobId})`)
     if (result.affectedRows) {
       return res.status(200).json({
         data: true,
