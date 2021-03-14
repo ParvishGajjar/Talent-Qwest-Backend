@@ -279,7 +279,12 @@ export const jobsRoundTwo = async (req, res) => {
 export const getUserStatus = async (req, res) => {
   try {
     const result = await query(
-      `select * from user_status where id=${req.user[0].id}`
+      `select user_status.*, job_post.name, job_criteria.round_one, job_criteria.round_two from user_status 
+      left join job_post 
+      on user_status.job_id = job_post.id
+      left join job_criteria
+      on user_status.job_id=job_criteria.id 
+      where user_status.id=${req.user[0].id}`
     );
     if (result[0]) {
       return res
