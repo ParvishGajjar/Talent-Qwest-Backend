@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 import { query } from "../index";
-import { htmlBody } from "./helper";
+import { htmlBody, htmlCongoRO } from "./helper";
 
 export const isAuthenticated = (req, res, next) => {
   let token = req.get("Authorization");
@@ -76,6 +76,7 @@ async function wrapedSendMail(mailOptions) {
         pass: process.env.GMAIL_PASSWORD,
       },
     });
+    console.log(process.env.GMAIL_PASSWORD,process.env.GMAIL_ID)
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
@@ -88,3 +89,19 @@ async function wrapedSendMail(mailOptions) {
     });
   });
 }
+
+export const sendEmailCongoRoundOne = async (email, name) => {
+  try {
+    var html_body = htmlCongoRO(name);
+    var mailOptions = {
+      to: email,
+      subject: "Round One Qualification",
+      text: `Congratulations! You qualified first round for job position of ${name}`,
+      html: html_body, // html body
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};

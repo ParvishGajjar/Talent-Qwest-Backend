@@ -1,5 +1,6 @@
 import { query } from "../index";
 import { localStorage } from "../auth/localstorage";
+import { sendEmailCongoRoundOne } from "../auth/authentication";
 
 export const getRoundOne = async (req, res) => {
   try {
@@ -193,7 +194,8 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
         }
       });
       const dataFetched = await query(
-        fetchQuestions + ` order by RAND() LIMIT 15`
+        fetchQuestions +
+          ` order by RAND() LIMIT ${github || database ? "15" : "20"}`
       );
       if (github) {
         var fetchGithub = [];
@@ -259,6 +261,7 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
           message: `Questions fetched`,
           status: true,
           given: Given,
+          job_id: req.params.jobId,
         });
       } else {
         return res.status(404).json({
@@ -266,6 +269,7 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
           message: `No questions found`,
           status: true,
           given: Given,
+          job_id: req.params.jobId,
         });
       }
     } else {
@@ -275,6 +279,62 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
     }
   } catch (e) {
     console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const updateRoundOne = async (req, res) => {
+  let qualified = 0;
+  try {
+    try {
+      await query(`begin;`);
+      const criteria = await query(
+        `select * from job_criteria where id=${req.body.job_id}`
+      );
+      if (criteria[0] && req.body.score >= criteria[0].round_one) {
+        qualified = 1;
+      }
+
+      await query(`insert into marks_one (id,job_id,marks,qualified) 
+      values (${req.user[0].id}, ${req.body.job_id}, ${req.body.score}, ${qualified})`);
+
+      await query(`update user_status set mark_one=${req.body.score}, status=${qualified} 
+      where id=${req.user[0].id} and job_id=${req.body.job_id}`);
+
+      const result3 = await query(
+        `select * from job_post where id=${req.body.job_id}`
+      );
+
+      await query(
+        `insert into notifications (user_id,message) values (${
+          req.user[0].id
+        },"${
+          qualified
+            ? `Congratulations! You qualified first round for job position of ${result3[0].name}`
+            : `Sorry, You didn't meet the required criteria to become ${result3[0].name}; Good luck next time!`
+        }")`
+      );
+      if (qualified) {
+        await sendEmailCongoRoundOne(req.user[0].email, result3[0].name);
+      }
+
+      await query(`commit;`);
+
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Rollback error: `, e);
+    await query(`rollback;`);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
