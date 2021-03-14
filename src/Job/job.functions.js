@@ -59,7 +59,7 @@ export const openJob = async (req, res) => {
     } else {
       return res
         .status(404)
-        .json({ data: [], message: `Something went wrong`, status: false });
+        .json({ data: [], message: `No open jobs found`, status: true });
     }
   } catch (e) {
     console.log(e);
