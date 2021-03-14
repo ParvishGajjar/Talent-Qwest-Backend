@@ -213,13 +213,11 @@ export const jobsRoundOne = async (req, res) => {
       value.Required_Skills = split(value.Required_Skills, "|");
     });
     if (result[0]) {
-      return res
-        .status(200)
-        .json({
-          data: result,
-          message: `fetched jobs for round one`,
-          status: true,
-        });
+      return res.status(200).json({
+        data: result,
+        message: `fetched jobs for round one`,
+        status: true,
+      });
     } else {
       return res
         .status(200)
@@ -238,29 +236,31 @@ export const jobsRoundOne = async (req, res) => {
 export const jobsRoundTwo = async (req, res) => {
   try {
     const result = await query(`select job_post.id, job_post.name, job_post.description, 
-          job_post.salary, job_post.vacancy, job_post.timestamp, job_post.is_open,
-          group_concat(coding_list.name separator '|') as 'Required_Skills' 
-          from job_post 
-          left join job_skill on job_post.id = job_skill.id
-          left join coding_list on job_skill.skill_id = coding_list.id
-          where 
-          job_post.is_open=0 
-          and 
-          job_post.id in (select user_job.job_id from user_job where user_job.user_id = ${req.user[0].id})
-          and 
-          job_post.id not in (select marks_two.job_id from marks_two where marks_two.id = ${req.user[0].id})
-          group by job_post.id;`);
+    job_post.salary, job_post.vacancy, job_post.timestamp, job_post.is_open,
+    group_concat(coding_list.name separator '|') as 'Required_Skills' 
+    from job_post 
+    left join job_skill on job_post.id = job_skill.id
+    left join coding_list on job_skill.skill_id = coding_list.id
+    where 
+    job_post.is_open=0 
+    and 
+    job_post.id in (select user_job.job_id from user_job where user_job.user_id = ${req.user[0].id})
+    and 
+    job_post.id not in (select marks_two.job_id from marks_two where marks_two.id = ${req.user[0].id})
+    and 
+    job_post.id in (select user_status.job_id from user_status left join job_criteria
+        on user_status.job_id=job_criteria.id 
+        where user_status.id=${req.user[0].id} and mark_one>=round_one)
+    group by job_post.id;`);
     result.forEach((value) => {
       value.Required_Skills = split(value.Required_Skills, "|");
     });
     if (result[0]) {
-      return res
-        .status(200)
-        .json({
-          data: result,
-          message: `fetched jobs for round two`,
-          status: true,
-        });
+      return res.status(200).json({
+        data: result,
+        message: `fetched jobs for round two`,
+        status: true,
+      });
     } else {
       return res
         .status(200)
