@@ -58,7 +58,7 @@ export const openJob = async (req, res) => {
         .json({ data: result, message: `fetched open jobs`, status: true });
     } else {
       return res
-        .status(404)
+        .status(200)
         .json({ data: [], message: `No open jobs found`, status: true });
     }
   } catch (e) {
