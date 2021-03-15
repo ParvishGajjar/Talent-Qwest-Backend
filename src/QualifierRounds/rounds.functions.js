@@ -348,7 +348,7 @@ export const addQuestionnaireRoundOne = async (req, res) => {
   if (!isValid) {
     return res
       .status(400)
-      .json({ message: "fail", status: false, error: validationError });
+      .json({ message: "fail", status: false, error: validationError[0] });
   }
   try {
     try {
