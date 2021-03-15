@@ -386,7 +386,7 @@ export const viewOthersProfile = async (req, res) => {
      from user_info as ui 
      left join user_profile as up 
      on ui.id= up.user_id
-     where ui.username='${req.params.username}';`);
+     where ui.user_name='${req.params.username}';`);
     const user_skills = await query(`select group_concat(skill_list.name separator '|') as skills from user_skill
      left join skill_list on user_skill.skill_id=skill_list.id
      where user_skill.user_id=${profile[0].id}
