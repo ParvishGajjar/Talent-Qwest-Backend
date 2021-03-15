@@ -302,3 +302,38 @@ export const getUserStatus = async (req, res) => {
     });
   }
 };
+
+export const jobConversion = async (req, res) => {
+  try {
+    if (req.user[0].usertype === 2) {
+      const result = await query(
+        `update job_post set is_open=${req.body.isOpen} where id=${req.params.jobId}`
+      );
+      if (result.affectedRows) {
+        return res.status(200).json({
+          data: true,
+          message: `Job Post Status Updated`,
+          status: true,
+        });
+      } else {
+        return res.status(400).json({
+          data: false,
+          message: "something went wrong",
+          status: false,
+        });
+      }
+    }
+    return res.status(401).json({
+      data: false,
+      message: "Access Denied",
+      status: false,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};

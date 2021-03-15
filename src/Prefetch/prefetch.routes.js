@@ -12,7 +12,10 @@ import {
   getLanguages,
   getQualifications,
   getFresherOrNot,
-  viewMyProfile
+  viewMyProfile,
+  getCodingLanguage,
+  viewOthersProfile,
+  fetchUsername
 } from "./prefetch.functions";
 var router = express.Router();
 
@@ -27,5 +30,8 @@ router.get('/getlanguages', getLanguages)
 router.get('/getqualifications', getQualifications)
 router.get('/getfresherornot', isAuthenticated,getFresherOrNot)
 router.get('/view-profile/me', isAuthenticated, viewMyProfile)
+router.get("/view-profile/:username", isAuthenticated, viewOthersProfile)
+router.get("/getusername", fetchUsername)
+router.get("/coding-language", isAuthenticated, getCodingLanguage)
 
 module.exports = router;

@@ -1,6 +1,7 @@
 import { query } from "../index";
 import { localStorage } from "../auth/localstorage";
 import { sendEmailCongoRoundOne } from "../auth/authentication";
+import { validateQuestionnaireRO } from "../Validation/validateRounds";
 
 export const getRoundOne = async (req, res) => {
   try {
@@ -322,6 +323,71 @@ export const updateRoundOne = async (req, res) => {
 
       await query(`commit;`);
 
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Rollback error: `, e);
+    await query(`rollback;`);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const addQuestionnaireRoundOne = async (req, res) => {
+  let newCodingLanguage = 0;
+  const { validationError, isValid } = validateQuestionnaireRO(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      //Inserting new coding language if present
+      if (req.body.codingLanguage.new.length) {
+        newCodingLanguage = await query(
+          `insert into coding_list (name) values ("${req.body.codingLanguage.new[0]}")`
+        );
+      }
+      let quesString = `insert into round_one (cl_id,question,op_1,op_2,op_3,op_4,correct_answer) 
+       values (${
+         req.body.codingLanguage.old[0]
+           ? req.body.codingLanguage.old[0]
+           : newCodingLanguage.insertId
+       },
+       "${req.body.questionnaireList[0].question}","${
+        req.body.questionnaireList[0].op_1
+      }", 
+       "${req.body.questionnaireList[0].op_2}","${
+        req.body.questionnaireList[0].op_3
+      }",
+       "${req.body.questionnaireList[0].op_4}","${
+        req.body.questionnaireList[0].correct_answer
+      }")`;
+      req.body.questionnaireList.forEach((val, index) => {
+        if (index != 0) {
+          quesString += `(${
+            req.body.codingLanguage.old[0]
+              ? req.body.codingLanguage.old[0]
+              : newCodingLanguage.insertId
+          },
+            "${val.question}","${val.op_1}","${val.op_2}","${val.op_3}","${
+            val.op_4
+          }","${val.correct_answer}")`;
+        }
+      });
+      await query(quesString);
+      await query(`commit;`);
       return res
         .status(200)
         .json({ data: true, message: `Data updated`, status: true });

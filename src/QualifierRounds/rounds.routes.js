@@ -3,7 +3,8 @@ import {
     getRoundOne,
     fetchRoundOne,
     fetchRoundOneQuestionnaire,
-    updateRoundOne
+    updateRoundOne,
+    addQuestionnaireRoundOne
   } from "./rounds.functions.js";
   import express from "express";
   import { isAuthenticated } from "../auth/authentication.js";
@@ -13,5 +14,6 @@ import {
   router.post("/round-one", isAuthenticated, fetchRoundOne);
   router.get("/roundone/:jobId", isAuthenticated, fetchRoundOneQuestionnaire)
   router.post("/update-round-one", isAuthenticated, updateRoundOne)
+  router.post("/addquestions-round-one", isAuthenticated, addQuestionnaireRoundOne)
   
   module.exports = router;
