@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 import { query } from "../index";
-import { htmlBody, htmlCongoRO } from "./helper";
+import { htmlBody, htmlCongoRO, newJobPostHTML } from "./helper";
 
 export const isAuthenticated = (req, res, next) => {
   let token = req.get("Authorization");
@@ -105,3 +105,17 @@ export const sendEmailCongoRoundOne = async (email, name) => {
     console.log(e);
   }
 };
+
+export const sendEmailNewJobPost = async (email, data) => { try {
+  var html_body = newJobPostHTML(data);
+  var mailOptions = {
+    to: email,
+    subject: "New Job Has Been Posted",
+    text: `New Job has been recently posted which requires skill proficiency like yours, Check it out on Talent Qwest`,
+    html: html_body, // html body
+  };
+  let result = await wrapedSendMail(mailOptions);
+  return result;
+} catch (e) {
+  console.log(e);
+}}

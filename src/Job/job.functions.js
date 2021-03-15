@@ -1,6 +1,7 @@
 import { query } from "../index";
 import { split } from "lodash";
 import { validateJobPost } from "../Validation/validateRounds";
+import { sendEmailNewJobPost } from "../auth/authentication";
 
 export const applyForJob = async (req, res) => {
   try {
@@ -340,6 +341,8 @@ export const jobConversion = async (req, res) => {
 };
 
 export const addJobPost = async (req, res) => {
+  let emailList = [];
+  let requiredSkills = [];
   if (req.user[0].usertype === 1) {
     res.status(401).json({
       data: false,
@@ -367,10 +370,52 @@ export const addJobPost = async (req, res) => {
         }
       });
       await query(jsquery);
+
       await query(
         `insert into job_criteria values (${result.insertId}, ${req.body.round_one_criteria}, ${req.body.round_two_criteria})`
       );
+
+      const result2 = await query(`select user_info.id, user_info.email, 
+      group_concat(skill_list.name separator '|') as 'skills' 
+      from user_info 
+      left join user_skill on user_info.id = user_skill.user_id
+      left join skill_list on user_skill.skill_id = skill_list.id
+      where 
+      user_info.usertype=1 
+      group by user_info.id;`);
+
+      const result3 = await query(`select jp.id, jp.name, group_concat(coding_list.name separator '|') as 'skills' from
+      job_post as jp left join job_skill on jp.id = job_skill.id
+      left join coding_list on job_skill.skill_id=coding_list.id
+      where jp.id = ${result.insertId}
+      group by jp.id;`);
+
+      result2.forEach((value) => {
+        value.skills = split(value.skills, "|");
+      });
+
+      requiredSkills = split(result3[0].skills, "|");
+
+      result2.map((item) => {
+        item.skills.forEach((val) => {
+          if (
+            (requiredSkills.includes(val) ||
+              req.body.name.toLowerCase() === val.toLowerCase()) &&
+            !emailList.includes(item.email)
+          ) {
+            emailList.push(item.email);
+          }
+        });
+      });
+
+      if (emailList[0]) {
+        emailList.forEach(async (item) => {
+          await sendEmailNewJobPost(item, req.body);
+        });
+      }
+  
       await query("commit;");
+  
       res.status(200).json({
         data: true,
         message: `Job Post Added`,
