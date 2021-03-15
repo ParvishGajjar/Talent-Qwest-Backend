@@ -356,7 +356,7 @@ export const addJobPost = async (req, res) => {
   try {
     try {
       await query(`begin;`);
-      const result = await query(`insert into job_post (name.description,salary,vacancy) values 
+      const result = await query(`insert into job_post (name,description,salary,vacancy) values 
       ("${req.body.name}", "${req.body.description}", ${
         req.body.salary
       }, ${parseInt(req.body.vacancy)});`);
