@@ -83,8 +83,6 @@ export const closedJob = async (req, res) => {
           left join coding_list on job_skill.skill_id = coding_list.id
           where 
           job_post.is_open=1 
-          and 
-          job_post.id in (select user_job.job_id from user_job where user_job.user_id = ${req.user[0].id})
           group by job_post.id;`);
     result.forEach((value) => {
       value.Required_Skills = split(value.Required_Skills, "|");
