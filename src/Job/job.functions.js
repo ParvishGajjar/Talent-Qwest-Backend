@@ -1,5 +1,6 @@
 import { query } from "../index";
 import { split } from "lodash";
+import { validateJobPost } from "../Validation/validateRounds";
 
 export const applyForJob = async (req, res) => {
   try {
@@ -330,6 +331,62 @@ export const jobConversion = async (req, res) => {
     });
   } catch (e) {
     console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const addJobPost = async (req, res) => {
+  if (req.user[0].usertype === 1) {
+    res.status(401).json({
+      data: false,
+      message: "Access Denied",
+      status: false,
+    });
+  }
+  const { validationError, isValid } = validateJobPost(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      const result = await query(`insert into job_post (name.description,salary,vacancy) values 
+      ("${req.body.name}", "${req.body.description}", ${
+        req.body.salary
+      }, ${parseInt(req.body.vacancy)});`);
+      let jsquery = `insert into job_skill values (${result[0].insertId}, ${req.body.skills[0]})`;
+      req.body.skills.forEach((val, index) => {
+        if (index != 0) {
+          jsquery += `,(${result[0].insertId}, ${val})`;
+        }
+      });
+      await query(jsquery);
+      await query(
+        `insert into job_criteria values (${result[0].insertId}, ${req.body.round_one_criteria}, ${req.body.round_two_criteria})`
+      );
+      await query("commit;");
+      res.status(200).json({
+        data: true,
+        message: `Job Post Added`,
+        status: true,
+      });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res.status(400).json({
+        data: false,
+        message: `fail`,
+        status: false,
+      });
+    }
+  } catch (e) {
+    console.log("Error rolling back: ", e);
     return res.status(400).json({
       data: false,
       message: `fail`,

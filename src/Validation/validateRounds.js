@@ -59,3 +59,33 @@ export const validateQuestionnaireRO = (data) => {
     return { isValid, validationError };
   }
 };
+
+export const validateJobPost = (data) => {
+  let isValid = false;
+  let validationError = "";
+  if (!data.name) {
+    validationError = "Job position is required";
+    return { isValid, validationError };
+  } else if (!data.description) {
+    validationError = "Job description is required";
+    return { isValid, validationError };
+  } else if (!data.salary) {
+    validationError = "Job salary is required";
+    return { isValid, validationError };
+  } else if (!data.vacancy) {
+    validationError = "Job vacancy is required";
+    return { isValid, validationError };
+  } else if (!data.skills[0]) {
+    validationError = "Atleast one skill is required";
+    return { isValid, validationError };
+  } else if (!data.round_one_criteria) {
+    validationError = "Round one is required";
+    return { isValid, validationError };
+  } else if (!data.round_two_criteria) {
+    validationError = "Round two is required";
+    return { isValid, validationError };
+  } else {
+    isValid = true;
+    return { isValid, validationError };
+  }
+};
