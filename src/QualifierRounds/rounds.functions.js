@@ -376,7 +376,7 @@ export const addQuestionnaireRoundOne = async (req, res) => {
       }")`;
       req.body.questionnaireList.forEach((val, index) => {
         if (index != 0) {
-          quesString += `(${
+          quesString += `, (${
             req.body.codingLanguage.old[0]
               ? req.body.codingLanguage.old[0]
               : newCodingLanguage.insertId
