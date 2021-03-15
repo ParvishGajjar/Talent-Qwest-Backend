@@ -206,7 +206,7 @@ export const login = async (req, res) => {
   }
   try {
     const user = await query(
-      `select id, email, password, is_verified from user_info where email='${req.body.email}';`
+      `select id, email, password, is_verified, usertype from user_info where email='${req.body.email}';`
     );
     if (!user[0]) {
       return res
@@ -268,6 +268,7 @@ export const login = async (req, res) => {
         is_verified: 1,
         signup_pages: signupPages,
         status: true,
+        usertype: user[0].usertype
       });
     } else {
       return res.status(401).json({
