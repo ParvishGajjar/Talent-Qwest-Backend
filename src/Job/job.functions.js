@@ -360,15 +360,15 @@ export const addJobPost = async (req, res) => {
       ("${req.body.name}", "${req.body.description}", ${
         req.body.salary
       }, ${parseInt(req.body.vacancy)});`);
-      let jsquery = `insert into job_skill values (${result[0].insertId}, ${req.body.skills[0]})`;
+      let jsquery = `insert into job_skill values (${result.insertId}, ${req.body.skills[0]})`;
       req.body.skills.forEach((val, index) => {
         if (index != 0) {
-          jsquery += `,(${result[0].insertId}, ${val})`;
+          jsquery += `,(${result.insertId}, ${val})`;
         }
       });
       await query(jsquery);
       await query(
-        `insert into job_criteria values (${result[0].insertId}, ${req.body.round_one_criteria}, ${req.body.round_two_criteria})`
+        `insert into job_criteria values (${result.insertId}, ${req.body.round_one_criteria}, ${req.body.round_two_criteria})`
       );
       await query("commit;");
       res.status(200).json({
