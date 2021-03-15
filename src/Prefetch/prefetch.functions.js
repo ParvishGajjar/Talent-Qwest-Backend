@@ -512,11 +512,11 @@ export const getCodingLanguage = async (req, res) => {
 
 export const fetchUsername = async (req, res) => {
   try {
-    const result = await query(`select username from user_info`);
+    const result = await query(`select user_name from user_info`);
 
     if (result[0]) {
       let usesrname_list = result.map((val) => {
-        return val.username;
+        return val.user_name;
       });
       return res.status(200).json({
         data: usesrname_list,
