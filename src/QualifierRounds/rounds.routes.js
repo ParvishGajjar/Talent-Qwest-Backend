@@ -6,6 +6,9 @@ import {
   updateRoundOne,
   addQuestionnaireRoundOne,
   uploadCodeSnippetRoundTwo,
+  addQuestionnaireRoundTwo,
+  addRoundOne,
+  addRoundTwo,
 } from "./rounds.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -28,5 +31,8 @@ router.post(
   [isAuthenticated, upload.single("code-snippet")],
   uploadCodeSnippetRoundTwo
 );
+router.post("/addquestion-round-two", isAuthenticated, addQuestionnaireRoundTwo)
+router.post("/add-round-two", isAuthenticated, addRoundOne)
+router.post("/add-round-two", isAuthenticated, addRoundTwo)
 
 module.exports = router;

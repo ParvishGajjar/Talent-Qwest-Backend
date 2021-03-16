@@ -1,7 +1,12 @@
+/* eslint-disable no-undef */
 import { query } from "../index";
 import { localStorage } from "../auth/localstorage";
 import { sendEmailCongoRoundOne } from "../auth/authentication";
-import { validateQuestionnaireRO } from "../Validation/validateRounds";
+import {
+  validateQuestionnaireRO,
+  validateQuestionnaireRT,
+  validateRoundOneQ,
+} from "../Validation/validateRounds";
 const AWS = require("aws-sdk");
 
 const s3Client = new AWS.S3({
@@ -424,26 +429,214 @@ export const addQuestionnaireRoundOne = async (req, res) => {
 export const uploadCodeSnippetRoundTwo = async (req, res) => {
   try {
     console.log(req.file);
-    uploadParams.Key = 'scenary'+'-'+Date.now()+'-'+req.file.originalname
-    uploadParams.Body = req.file.buffer
-  
-    s3Client.upload(uploadParams, (err, data) => {
-      console.log(data)
-  
+    uploadParams.Key =
+      "scenary" + "-" + Date.now() + "-" + req.file.originalname;
+    uploadParams.Body = req.file.buffer;
+
+    s3Client.upload(uploadParams, async (err, data) => {
+      console.log(data);
+
       if (err) {
-        res.status(500).json({ error: 'Error -> ' + err })
+        res.status(500).json({ error: "Error -> " + err });
       }
 
-      return res.status(200).json({
-        data,
-        message: `success`,
-        status: true,
-      });
-     
-    })
-   
+      const result = await query(
+        `insert into uploads (link) values ("${data.Location}")`
+      );
+
+      if (result.insertId) {
+        return res.status(200).json({
+          data: {
+            link_id: result.insertId,
+            link_url: data.Location,
+          },
+          message: `success`,
+          status: true,
+        });
+      } else {
+        return res.status(400).json({
+          data: false,
+          message: `something went wrong`,
+          status: false,
+        });
+      }
+    });
   } catch (e) {
     console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+// {
+//   "codingLanguage":{
+//       "old":[3],
+//       "new":[]
+//   },
+//   "questionnaireList":[{
+//       "question_link":"http://www.google.com",
+//       "input_line":"3",
+//       "correct_answer":"google",
+//   }]
+// }
+export const addQuestionnaireRoundTwo = async (req, res) => {
+  let newCodingLanguage = 0;
+  const { validationError, isValid } = validateQuestionnaireRT(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      //Inserting new coding language if present
+      if (req.body.codingLanguage.new.length) {
+        newCodingLanguage = await query(
+          `insert into coding_list (name) values ("${req.body.codingLanguage.new[0]}")`
+        );
+      }
+      let quesString = `insert into round_two (cl_id,question_link,input_line,correct_answer) 
+       values (${
+         req.body.codingLanguage.old[0]
+           ? req.body.codingLanguage.old[0]
+           : newCodingLanguage.insertId
+       },
+       "${req.body.questionnaireList[0].question_link}",${
+        req.body.questionnaireList[0].input_line
+      }, 
+       "${req.body.questionnaireList[0].correct_answer}")`;
+      req.body.questionnaireList.forEach((val, index) => {
+        if (index != 0) {
+          quesString += `, (${
+            req.body.codingLanguage.old[0]
+              ? req.body.codingLanguage.old[0]
+              : newCodingLanguage.insertId
+          },
+            "${val.question_link}",${val.input_line},"${val.correct_answer}")`;
+        }
+      });
+      await query(quesString);
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Rollback error: `, e);
+    await query(`rollback;`);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+// {
+//   "codingLanguage":{
+//       "old":[3],
+//       "new":[]
+//   },
+//   "question_link":"http://www.google.com",
+//   "link_id":1,
+//   "input_line":"3",
+//   "correct_answer":"google",
+// }
+
+export const addRoundOne = async (req, res) => {
+  let newCodingLanguage = 0;
+  const { validationError, isValid } = validateRoundOneQ(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      //Inserting new coding language if present
+      if (req.body.codingLanguage.new.length) {
+        newCodingLanguage = await query(
+          `insert into coding_list (name) values ("${req.body.codingLanguage.new[0]}")`
+        );
+      }
+
+      await query(`insert into round_one (cl_id,question,op_1,op_2,op_3,op_4,correct_answer) 
+      values (${
+        req.body.codingLanguage.old[0]
+          ? req.body.codingLanguage.old[0]
+          : newCodingLanguage.insertId
+      },
+      "${req.body.question}","${req.body.op_1}", 
+      "${req.body.op_2}","${req.body.op_3}",
+      "${req.body.op_4}","${req.body.correct_answer}")`);
+
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Rollback error: `, e);
+    await query(`rollback;`);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const addRoundTwo = async (req, res) => {
+  let newCodingLanguage = 0;
+  const { validationError, isValid } = validateRoundTwoQ(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError[0] });
+  }
+  try {
+    try {
+      await query(`begin;`);
+      //Inserting new coding language if present
+      if (req.body.codingLanguage.new.length) {
+        newCodingLanguage = await query(
+          `insert into coding_list (name) values ("${req.body.codingLanguage.new[0]}")`
+        );
+      }
+      await query(`insert into round_two (cl_id,question_link,input_line,correct_answer) 
+      values (${
+        req.body.codingLanguage.old[0]
+          ? req.body.codingLanguage.old[0]
+          : newCodingLanguage.insertId
+      },
+      "${req.body.question_link}",${req.body.input_line}, 
+      "${req.body.correct_answer}")`);
+      await query(`update uploads set is_used=1 where id=${req.body.link_id}`);
+      await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Rollback error: `, e);
+    await query(`rollback;`);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
