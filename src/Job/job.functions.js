@@ -381,7 +381,9 @@ export const addJobPost = async (req, res) => {
       left join user_skill on user_info.id = user_skill.user_id
       left join skill_list on user_skill.skill_id = skill_list.id
       where 
-      user_info.usertype=1 
+      user_info.usertype=1
+      and
+      user_info.is_verified=1 
       group by user_info.id;`);
 
       const result3 = await query(`select jp.id, jp.name, group_concat(coding_list.name separator '|') as 'skills' from

@@ -110,7 +110,7 @@ export const sendEmailNewJobPost = async (email, data) => { try {
   var html_body = newJobPostHTML(data);
   var mailOptions = {
     to: email,
-    subject: "New Job Has Been Posted",
+    subject: `${data.name} Required`,
     text: `New Job has been recently posted which requires skill proficiency like yours, Check it out on Talent Qwest`,
     html: html_body, // html body
   };
