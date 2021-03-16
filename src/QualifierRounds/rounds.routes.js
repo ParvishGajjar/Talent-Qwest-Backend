@@ -32,7 +32,7 @@ router.post(
   uploadCodeSnippetRoundTwo
 );
 router.post("/addquestion-round-two", isAuthenticated, addQuestionnaireRoundTwo)
-router.post("/add-round-two", isAuthenticated, addRoundOne)
+router.post("/add-round-one", isAuthenticated, addRoundOne)
 router.post("/add-round-two", isAuthenticated, addRoundTwo)
 
 module.exports = router;
