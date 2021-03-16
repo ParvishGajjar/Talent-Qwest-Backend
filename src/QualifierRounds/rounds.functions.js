@@ -2,6 +2,20 @@ import { query } from "../index";
 import { localStorage } from "../auth/localstorage";
 import { sendEmailCongoRoundOne } from "../auth/authentication";
 import { validateQuestionnaireRO } from "../Validation/validateRounds";
+const AWS = require("aws-sdk");
+
+const s3Client = new AWS.S3({
+  accessKeyId: "AKIAUB6UMTZ23KCKACL5",
+  secretAccessKey: "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",
+  region: "us-east-2",
+});
+
+const uploadParams = {
+  Bucket: "talentqwest",
+  Key: "", // pass key
+  Body: null, // pass file body
+  ACL: "public-read",
+};
 
 export const getRoundOne = async (req, res) => {
   try {
@@ -401,6 +415,35 @@ export const addQuestionnaireRoundOne = async (req, res) => {
   } catch (e) {
     console.log(`Rollback error: `, e);
     await query(`rollback;`);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const uploadCodeSnippetRoundTwo = async (req, res) => {
+  try {
+    console.log(req.file);
+    uploadParams.Key = 'scenary'+'-'+Date.now()+'-'+req.file.originalname
+    uploadParams.Body = req.file.buffer
+  
+    s3Client.upload(uploadParams, (err, data) => {
+      console.log(data)
+  
+      if (err) {
+        res.status(500).json({ error: 'Error -> ' + err })
+      }
+
+      return res.status(200).json({
+        data,
+        message: `success`,
+        status: true,
+      });
+     
+    })
+   
+  } catch (e) {
+    console.log(e);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
