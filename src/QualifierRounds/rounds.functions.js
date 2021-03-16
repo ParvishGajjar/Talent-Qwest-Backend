@@ -550,6 +550,13 @@ export const addQuestionnaireRoundTwo = async (req, res) => {
 // }
 
 export const addRoundOne = async (req, res) => {
+  if (req.user[0].usertype !== 2) {
+    return res.status(401).json({
+      data: false,
+      message: `Access Denied`,
+      status: false,
+    });
+  }
   let newCodingLanguage = 0;
   const { validationError, isValid } = validateRoundOneQ(req.body);
   if (!isValid) {
@@ -598,6 +605,13 @@ export const addRoundOne = async (req, res) => {
 };
 
 export const addRoundTwo = async (req, res) => {
+  if (req.user[0].usertype !== 2) {
+    return res.status(401).json({
+      data: false,
+      message: `Access Denied`,
+      status: false,
+    });
+  }
   let newCodingLanguage = 0;
   const { validationError, isValid } = validateRoundTwoQ(req.body);
   if (!isValid) {
