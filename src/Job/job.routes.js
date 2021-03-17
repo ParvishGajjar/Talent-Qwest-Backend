@@ -12,6 +12,7 @@ import {
   addJobPost,
   hrRoundOne,
   filterHrRoundOne,
+  updateReviewRoundOne,
 } from "./job.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -29,6 +30,7 @@ router.get("/user-status", isAuthenticated, getUserStatus);
 router.post("/job-conversion/:jobId", isAuthenticated, jobConversion);
 router.post("/add-job-post", isAuthenticated, addJobPost);
 router.get("/hr-round-one", isAuthenticated, hrRoundOne);
-router.get('/filter-hr-round-one', isAuthenticated,filterHrRoundOne)
+router.get('/filter-hr-round-one', isAuthenticated,filterHrRoundOne);
+router.post('/update-review-one', isAuthenticated, updateReviewRoundOne)
 
 module.exports = router;

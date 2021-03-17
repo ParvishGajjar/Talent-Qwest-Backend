@@ -452,7 +452,7 @@ export const hrRoundOne = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, user_status.mark_one, job_criteria.round_one 
+    job_post.name, job_post.id as job_id, user_status.mark_one, user_status.review_one, job_criteria.round_one 
     from user_job
     left join user_info on user_info.id=user_job.user_id
     left join job_post on user_job.job_id=job_post.id
@@ -529,7 +529,7 @@ export const filterHrRoundOne = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, user_status.mark_one, job_criteria.round_one 
+    job_post.name, job_post.id as job_id, user_status.mark_one, user_status.review_one, job_criteria.round_one 
     from user_job
     left join user_info on user_info.id=user_job.user_id
     left join job_post on user_job.job_id=job_post.id
@@ -593,6 +593,29 @@ export const filterHrRoundOne = async (req, res) => {
       message: `No one has applied yet`,
       status: true,
     });
+  } catch (e) {
+    console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const updateReviewRoundOne = async (req, res) => {
+  try {
+    const result = await query(`update user_status set review_one = ${req.body.review} where id=${req.body.user_id} and 
+    job_id=${req.body.job_id}`);
+    if (result.affectedRows) {
+      return res
+        .status(200)
+        .json({ data: true, message: `data updated`, status: true });
+    } else {
+      return res
+        .status(400)
+        .json({ data: false, message: `something went wrong`, status: false });
+    }
   } catch (e) {
     console.log(e);
     return res.status(400).json({
