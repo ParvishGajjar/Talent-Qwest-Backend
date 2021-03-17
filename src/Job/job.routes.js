@@ -11,6 +11,7 @@ import {
   jobConversion,
   addJobPost,
   hrRoundOne,
+  filterHrRoundOne,
 } from "./job.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
