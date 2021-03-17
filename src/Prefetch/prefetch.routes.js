@@ -15,7 +15,8 @@ import {
   viewMyProfile,
   getCodingLanguage,
   viewOthersProfile,
-  fetchUsername
+  fetchUsername,
+  fetchJobPosition
 } from "./prefetch.functions";
 var router = express.Router();
 
@@ -33,5 +34,6 @@ router.get('/view-profile/me', isAuthenticated, viewMyProfile)
 router.get("/view-profile/:username", isAuthenticated, viewOthersProfile)
 router.get("/getusername", fetchUsername)
 router.get("/coding-language", isAuthenticated, getCodingLanguage)
+router.get('/get-job-positions', isAuthenticated, fetchJobPosition)
 
 module.exports = router;
