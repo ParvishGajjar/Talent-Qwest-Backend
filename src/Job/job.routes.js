@@ -9,7 +9,8 @@ import {
   jobsRoundTwo,
   getUserStatus,
   jobConversion,
-  addJobPost
+  addJobPost,
+  hrRoundOne,
 } from "./job.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -20,11 +21,13 @@ router.post("/apply-for-job/:jobId", isAuthenticated, applyForJob);
 router.get("/open-job", isAuthenticated, openJob);
 router.get("/closed-job", isAuthenticated, closedJob);
 router.get("/applied-job", isAuthenticated, appliedJob);
-router.get("/job-details/:jobId", isAuthenticated, getJobDetails)
-router.get("/jobs-round-one", isAuthenticated, jobsRoundOne)
-router.get("/jobs-round-two", isAuthenticated, jobsRoundTwo)
-router.get("/user-status", isAuthenticated, getUserStatus)
-router.post("/job-conversion/:jobId", isAuthenticated, jobConversion)
+router.get("/job-details/:jobId", isAuthenticated, getJobDetails);
+router.get("/jobs-round-one", isAuthenticated, jobsRoundOne);
+router.get("/jobs-round-two", isAuthenticated, jobsRoundTwo);
+router.get("/user-status", isAuthenticated, getUserStatus);
+router.post("/job-conversion/:jobId", isAuthenticated, jobConversion);
 router.post("/add-job-post", isAuthenticated, addJobPost);
+router.get("/hr-round-one", isAuthenticated, hrRoundOne);
+router.get('/filter-hr-round-one', isAuthenticated,filterHrRoundOne)
 
 module.exports = router;

@@ -430,7 +430,7 @@ export const uploadCodeSnippetRoundTwo = async (req, res) => {
   try {
     console.log(req.file);
     uploadParams.Key =
-      "scenary" + "-" + Date.now() + "-" + req.file.originalname;
+      "uploads" + "-" + Date.now() + "-" + req.file.originalname;
     uploadParams.Body = req.file.buffer;
 
     s3Client.upload(uploadParams, async (err, data) => {

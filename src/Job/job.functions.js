@@ -2,6 +2,7 @@ import { query } from "../index";
 import { split } from "lodash";
 import { validateJobPost } from "../Validation/validateRounds";
 import { sendEmailNewJobPost } from "../auth/authentication";
+import * as _ from "lodash";
 
 export const applyForJob = async (req, res) => {
   try {
@@ -415,9 +416,9 @@ export const addJobPost = async (req, res) => {
           await sendEmailNewJobPost(item, req.body);
         });
       }
-  
+
       await query("commit;");
-  
+
       res.status(200).json({
         data: true,
         message: `Job Post Added`,
@@ -434,6 +435,167 @@ export const addJobPost = async (req, res) => {
     }
   } catch (e) {
     console.log("Error rolling back: ", e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const hrRoundOne = async (req, res) => {
+  let output = [];
+  let job_position = [];
+  let pass = 0;
+  let fail = 0;
+  let notgiven = 0;
+  let percentage = 0;
+  try {
+    const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
+    job_post.name, job_post.id as job_id, user_status.mark_one, job_criteria.round_one 
+    from user_job
+    left join user_info on user_info.id=user_job.user_id
+    left join job_post on user_job.job_id=job_post.id
+    left join user_status on job_post.id = user_status.job_id
+    left join job_criteria on job_post.id=job_criteria.id
+    where job_post.is_open = 0 and user_info.is_verified=1;`);
+
+    if (result[0]) {
+      result.forEach((item) => {
+        if (!job_position.includes(item.name)) {
+          output.push({
+            job_id: item.job_id,
+            job_position: item.name,
+            users: [],
+          });
+          job_position.push(item.name);
+        }
+      });
+      result.forEach((item) => {
+        if (!item.mark_one) {
+          notgiven = 1;
+        } else {
+          percentage = (item.mark_one / 20) * 100;
+          if (item.mark_one >= item.round_one) {
+            pass = 1;
+          } else {
+            fail = 1;
+          }
+        }
+        output[_.indexOf(job_position, item.name)]["users"].push({
+          user_id: item.id,
+          firstname: item.firstname,
+          lastname: item.lastname,
+          username: item.user_name,
+          round_one_score: item.mark_one,
+          round_one_criteria: item.round_one,
+          pass,
+          fail,
+          notgiven,
+          percentage,
+        });
+        notgiven = 0;
+        pass = 0;
+        fail = 0;
+        percentage = 0;
+      });
+      return res.status(200).json({
+        data: output,
+        message: `Data fetched`,
+        status: true,
+      });
+    }
+    return res.status(200).json({
+      data: [],
+      message: `No one has applied yet`,
+      status: true,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const filterHrRoundOne = async (req, res) => {
+  let output = [];
+  let job_position = [];
+  let pass = 0;
+  let fail = 0;
+  let notgiven = 0;
+  let percentage = 0;
+  try {
+    const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
+    job_post.name, job_post.id as job_id, user_status.mark_one, job_criteria.round_one 
+    from user_job
+    left join user_info on user_info.id=user_job.user_id
+    left join job_post on user_job.job_id=job_post.id
+    left join user_status on job_post.id = user_status.job_id
+    left join job_criteria on job_post.id=job_criteria.id
+    where job_post.is_open = 0 and user_info.is_verified=1 
+    ${
+      req.query.username
+        ? `and user_info.user_name LIKE "%${req.query.pattern}%";`
+        : req.query.position
+        ? `and job_post.name LIKE "%${req.query.pattern}%";`
+        : `;`
+    }`);
+
+    if (result[0]) {
+      result.forEach((item) => {
+        if (!job_position.includes(item.name)) {
+          output.push({
+            job_id: item.job_id,
+            job_position: item.name,
+            users: [],
+          });
+          job_position.push(item.name);
+        }
+      });
+      result.forEach((item) => {
+        if (!item.mark_one) {
+          notgiven = 1;
+        } else {
+          percentage = (item.mark_one / 20) * 100;
+          if (item.mark_one >= item.round_one) {
+            pass = 1;
+          } else {
+            fail = 1;
+          }
+        }
+        output[_.indexOf(job_position, item.name)]["users"].push({
+          user_id: item.id,
+          firstname: item.firstname,
+          lastname: item.lastname,
+          username: item.user_name,
+          round_one_score: item.mark_one,
+          round_one_criteria: item.round_one,
+          pass,
+          fail,
+          notgiven,
+          percentage,
+        });
+        notgiven = 0;
+        pass = 0;
+        fail = 0;
+        percentage = 0;
+      });
+      return res.status(200).json({
+        data: output,
+        message: `Data fetched`,
+        status: true,
+      });
+    }
+    return res.status(200).json({
+      data: [],
+      message: `No one has applied yet`,
+      status: true,
+    });
+  } catch (e) {
+    console.log(e);
     return res.status(400).json({
       data: false,
       message: `fail`,
