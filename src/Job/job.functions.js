@@ -537,13 +537,12 @@ export const filterHrRoundOne = async (req, res) => {
     left join job_criteria on job_post.id=job_criteria.id
     where job_post.is_open = 0 and user_info.is_verified=1 
     ${
-      req.query.username
+      req.query.username == 1
         ? `and user_info.user_name LIKE "%${req.query.pattern}%";`
-        : req.query.position
+        : req.query.position == 1
         ? `and job_post.name LIKE "%${req.query.pattern}%";`
         : `;`
     }`);
-
     if (result[0]) {
       result.forEach((item) => {
         if (!job_position.includes(item.name)) {
