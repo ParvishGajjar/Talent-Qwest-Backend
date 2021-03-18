@@ -1,7 +1,7 @@
 import { query } from "../index";
 import { split } from "lodash";
 import { validateJobPost } from "../Validation/validateRounds";
-import { sendEmailNewJobPost } from "../auth/authentication";
+import { sendEmailJobPostUpdated, sendEmailNewJobPost } from "../auth/authentication";
 import * as _ from "lodash";
 
 export const applyForJob = async (req, res) => {
@@ -807,6 +807,114 @@ export const updateReviewRoundTwo = async (req, res) => {
     }
   } catch (e) {
     console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const updateJobPost = async (req, res) => {
+  let emailList = [];
+  let requiredSkills = [];
+  if (req.user[0].usertype === 1) {
+    res.status(401).json({
+      data: false,
+      message: "Access Denied",
+      status: false,
+    });
+  }
+  const { validationError, isValid } = validateJobPost(req.body);
+  if (!isValid) {
+    return res
+      .status(400)
+      .json({ message: "fail", status: false, error: validationError });
+  }
+  try {
+    try {
+      await query(`begin;`);
+
+      const result = await query(
+        `update job_post set name="${req.body.name}",description="${req.body.description}",
+        salary="${req.body.salary}",vacancy=${req.body.vacancy} where id=${req.params.jobId};`
+      );
+
+      await query(`delete from job_skill where id=${req.params.jobId}`);
+
+      let jsquery = `insert into job_skill values (${req.params.jobId}, ${req.body.skills[0]})`;
+      req.body.skills.forEach((val, index) => {
+        if (index != 0) {
+          jsquery += `,(${req.params.jobId}, ${val})`;
+        }
+      });
+
+      await query(jsquery);
+
+      await query(
+        `update job_criteria set round_one = ${req.body.round_one_criteria}, round_two = ${req.body.round_two_criteria} 
+        where id=${req.params.jobId}`
+      );
+
+      const result2 = await query(`select user_info.id, user_info.email, 
+      group_concat(skill_list.name separator '|') as 'skills' 
+      from user_info 
+      left join user_skill on user_info.id = user_skill.user_id
+      left join skill_list on user_skill.skill_id = skill_list.id
+      where 
+      user_info.usertype=1
+      and
+      user_info.is_verified=1 
+      group by user_info.id;`);
+
+      const result3 = await query(`select jp.id, jp.name, group_concat(coding_list.name separator '|') as 'skills' from
+      job_post as jp left join job_skill on jp.id = job_skill.id
+      left join coding_list on job_skill.skill_id=coding_list.id
+      where jp.id = ${req.params.jobId}
+      group by jp.id;`);
+
+      result2.forEach((value) => {
+        value.skills = split(value.skills, "|");
+      });
+
+      requiredSkills = split(result3[0].skills, "|");
+
+      result2.map((item) => {
+        item.skills.forEach((val) => {
+          if (
+            (requiredSkills.includes(val) ||
+              req.body.name.toLowerCase() === val.toLowerCase()) &&
+            !emailList.includes(item.email)
+          ) {
+            emailList.push(item.email);
+          }
+        });
+      });
+
+      if (emailList[0]) {
+        emailList.forEach(async (item) => {
+          await sendEmailJobPostUpdated(item, req.body);
+        });
+      }
+
+      await query("commit;");
+
+      res.status(200).json({
+        data: true,
+        message: `Job Post Updated`,
+        status: true,
+      });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res.status(400).json({
+        data: false,
+        message: `fail`,
+        status: false,
+      });
+    }
+  } catch (e) {
+    console.log("Error rolling back: ", e);
     return res.status(400).json({
       data: false,
       message: `fail`,

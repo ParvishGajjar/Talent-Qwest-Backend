@@ -79,10 +79,10 @@ export const validateJobPost = (data) => {
     validationError = "Atleast one skill is required";
     return { isValid, validationError };
   } else if (!data.round_one_criteria) {
-    validationError = "Round one is required";
+    validationError = "Round one criteria is required";
     return { isValid, validationError };
   } else if (!data.round_two_criteria) {
-    validationError = "Round two is required";
+    validationError = "Round two criteria is required";
     return { isValid, validationError };
   } else {
     isValid = true;
