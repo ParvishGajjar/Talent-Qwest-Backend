@@ -607,7 +607,7 @@ export const filterHrRoundOne = async (req, res) => {
 
 export const updateReviewRoundOne = async (req, res) => {
   try {
-    const result = await query(`update user_status set review_one = ${req.body.review} where id=${req.body.user_id} and 
+    const result = await query(`update user_status set review_one = "${req.body.review}" where id=${req.body.user_id} and 
     job_id=${req.body.job_id}`);
     if (result.affectedRows) {
       return res
@@ -794,7 +794,7 @@ export const filterHrRoundTwo = async (req, res) => {
 
 export const updateReviewRoundTwo = async (req, res) => {
   try {
-    const result = await query(`update user_status set review_two = ${req.body.review} where id=${req.body.user_id} and 
+    const result = await query(`update user_status set review_two = "${req.body.review}" where id=${req.body.user_id} and 
     job_id=${req.body.job_id}`);
     if (result.affectedRows) {
       return res
