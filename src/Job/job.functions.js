@@ -791,3 +791,26 @@ export const filterHrRoundTwo = async (req, res) => {
     });
   }
 };
+
+export const updateReviewRoundTwo = async (req, res) => {
+  try {
+    const result = await query(`update user_status set review_two = ${req.body.review} where id=${req.body.user_id} and 
+    job_id=${req.body.job_id}`);
+    if (result.affectedRows) {
+      return res
+        .status(200)
+        .json({ data: true, message: `data updated`, status: true });
+    } else {
+      return res
+        .status(400)
+        .json({ data: false, message: `something went wrong`, status: false });
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};

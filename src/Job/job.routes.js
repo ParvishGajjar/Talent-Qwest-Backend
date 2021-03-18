@@ -15,6 +15,7 @@ import {
   updateReviewRoundOne,
   hrRoundTwo,
   filterHrRoundTwo,
+  updateReviewRoundTwo
 } from "./job.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -36,5 +37,6 @@ router.get("/hr-round-two", isAuthenticated, hrRoundTwo);
 router.get("/filter-hr-round-one", isAuthenticated, filterHrRoundOne);
 router.get("/filter-hr-round-two", isAuthenticated, filterHrRoundTwo);
 router.post("/update-review-one", isAuthenticated, updateReviewRoundOne);
+router.post("/update-review-two", isAuthenticated, updateReviewRoundTwo);
 
 module.exports = router;
