@@ -6,7 +6,7 @@ import {
   validateQuestionnaireRO,
   validateQuestionnaireRT,
   validateRoundOneQ,
-  validateRoundTwoQ,
+  validateRoundTwoQ
 } from "../Validation/validateRounds";
 const AWS = require("aws-sdk");
 
@@ -318,18 +318,19 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
       where user_job.user_id=${req.user[0].id} and user_job.job_id=${req.params.jobId}
       order by cl_id ASC;`
     );
-    console.log(userLanguages);
+    console.log(userLanguages)
     if (userLanguages[0].job_id) {
       var fetchQuestions = `select * from round_two where cl_id=${userLanguages[0].cl_id}`;
       userLanguages.forEach((value, key) => {
         if (key != 0 && value.cl_id != 9 && value.cl_id != 10) {
           fetchQuestions += ` or cl_id=${value.cl_id}`;
-        }
+        } 
       });
       const dataFetched = await query(
-        fetchQuestions + ` order by RAND() LIMIT 5`
+        fetchQuestions +
+          ` order by RAND() LIMIT 5`
       );
-      console.log(dataFetched);
+      console.log(dataFetched)
       const markstwo = await query(`select marks from marks_two  
       where marks_two.id=${req.user[0].id} and marks_two.job_id=${req.params.jobId}`);
       const jc = await query(
@@ -388,6 +389,7 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
       .json({ data: false, message: `fail`, status: false });
   }
 };
+
 
 export const updateRoundOne = async (req, res) => {
   let qualified = 0;
@@ -719,7 +721,7 @@ export const addRoundTwo = async (req, res) => {
           : newCodingLanguage.insertId
       },
       "${req.body.question_link}",${req.body.input_line}, 
-      ${req.body.correct_answer ? `${req.body.correct_answer}` : ``})`);
+      "${req.body.correct_answer}")`);
       await query(`update uploads set is_used=1 where id=${req.body.link_id}`);
       await query(`commit;`);
       return res
