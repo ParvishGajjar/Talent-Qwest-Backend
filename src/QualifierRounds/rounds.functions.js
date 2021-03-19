@@ -583,7 +583,7 @@ export const addQuestionnaireRoundTwo = async (req, res) => {
           `insert into coding_list (name) values ("${req.body.codingLanguage.new[0]}")`
         );
       }
-      let quesString = `insert into round_two (cl_id,question_link,input_line,correct_answer) 
+      let quesString = `insert into round_two (cl_id,question_link,input_line,corrected_answer) 
        values (${
          req.body.codingLanguage.old[0]
            ? req.body.codingLanguage.old[0]
@@ -714,7 +714,7 @@ export const addRoundTwo = async (req, res) => {
           `insert into coding_list (name) values ("${req.body.codingLanguage.new[0]}")`
         );
       }
-      await query(`insert into round_two (cl_id,question_link,input_line,correct_answer) 
+      await query(`insert into round_two (cl_id,question_link,input_line,corrected_answer) 
       values (${
         req.body.codingLanguage.old[0]
           ? req.body.codingLanguage.old[0]
