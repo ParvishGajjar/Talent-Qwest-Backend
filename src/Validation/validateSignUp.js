@@ -238,6 +238,7 @@ export const validateSignUpSeven = (data) => {
   var isValid = true;
   var validationError = [];
   // var nameregex = /^[a-zA-Z0-9-\s]*$/;
+  console.log("seven", data)
 
   data.forEach((value) => {
     if (!value.company_name.length) {
@@ -245,10 +246,8 @@ export const validateSignUpSeven = (data) => {
         value.job_title.length ||
         value.description.length ||
         value.start_date.length ||
-        value.end_date.length ||
-        value.cotact_name.length ||
+        value.contact_name.length ||
         value.contact_email.length ||
-        value.till_present.length ||
         value.company_url
       ) {
         isValid = false;
