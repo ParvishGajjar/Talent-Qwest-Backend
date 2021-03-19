@@ -9,7 +9,11 @@ import {
   updateProjectDetails,
   updatePatentDetails,
   updateCertificationDetails,
-  updateSocialMediaDetails
+  updateSocialMediaDetails,
+  updateSkills,
+  updateHobbies,
+  updateLanguages,
+  updatePassword
 } from "./profile.functions";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -26,5 +30,9 @@ router.post("/update-project-details", isAuthenticated, updateProjectDetails);
 router.post("/update-patent-details", isAuthenticated, updatePatentDetails);
 router.post("/update-certification-details", isAuthenticated, updateCertificationDetails);
 router.post("/update-social-media-details", isAuthenticated, updateSocialMediaDetails);
+router.post("/update-skills", isAuthenticated, updateSkills)
+router.post("/update-hobbies", isAuthenticated, updateHobbies)
+router.post("/update-languages", isAuthenticated, updateLanguages)
+router.post("/change-password", isAuthenticated, updatePassword)
 
 module.exports = router;

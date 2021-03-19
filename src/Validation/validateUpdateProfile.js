@@ -1,4 +1,4 @@
-import { notEmpty, validateURL } from "./checkempty";
+import { notEmpty, validateURL, validateEmail } from "./checkempty";
 
 export const basicInformation = (data) => {
   var isValid = false;
@@ -101,6 +101,81 @@ export const socialMediaDetails = (data) => {
     return { validationError, isValid };
   } else if (data.instagram.length && !validateURL(data.instagram)) {
     validationError = "Instagram link should be in correct format";
+    return { validationError, isValid };
+  } else {
+    isValid = true;
+    return { validationError, isValid };
+  }
+};
+
+export const validateSkills = (body) => {
+  var isValid = false;
+  var validationError = "";
+  if (!Object.keys(body.skills).length) {
+    validationError = "Skills should be selected";
+    return { validationError, isValid };
+  } else if (body.skills.old.length + body.skills.new.length < 1) {
+    validationError = "Minimum 1 skill should be selected";
+    return { validationError, isValid };
+  } else {
+    isValid = true;
+    return { validationError, isValid };
+  }
+};
+
+export const validateHobbies = (body) => {
+  var isValid = false;
+  var validationError = "";
+  if (!Object.keys(body.hobbies).length) {
+    validationError = "Hobbies should be selected";
+    return { validationError, isValid };
+  } else if (body.hobbies.old.length + body.hobbies.new.length < 1) {
+    validationError = "Minimum 1 hobby should be selected";
+    return { validationError, isValid };
+  } else {
+    isValid = true;
+    return { validationError, isValid };
+  }
+};
+
+export const validateLanguages = (body) => {
+  var isValid = false;
+  var validationError = "";
+  if (!Object.keys(body.languages).length) {
+    validationError = "Language should be selected";
+    return { validationError, isValid };
+  } else if (body.languages.old.length + body.languages.new.length < 1) {
+    validationError = "Minimum 1 language should be selected";
+    return { validationError, isValid };
+  } else {
+    isValid = true;
+    return { validationError, isValid };
+  }
+};
+
+export const validateUpdatePassword = (data) => {
+  var isValid = false;
+  var validationError = "";
+  if (data.password.length < 1) {
+    validationError = "Password should be entered";
+    return { validationError, isValid };
+  } else if (data.new_password.length < 1) {
+    validationError = "New password should be entered";
+    return { validationError, isValid };
+  } else {
+    isValid = true;
+    return { validationError, isValid };
+  }
+};
+
+export const validateForgetPassword = (data) => {
+  var isValid = false;
+  var validationError = "";
+  if (data.email === "") {
+    validationError = "Email should be entered";
+    return { validationError, isValid };
+  } else if (!validateEmail(data.email)) {
+    validationError = "Invalid Email";
     return { validationError, isValid };
   } else {
     isValid = true;

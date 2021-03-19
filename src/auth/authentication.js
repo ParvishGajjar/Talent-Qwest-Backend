@@ -2,7 +2,7 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 import { query } from "../index";
-import { htmlBody, htmlCongoRO, newJobPostHTML, updateJobPostHTML } from "./helper";
+import { htmlBody, htmlCongoRO, newJobPostHTML, sendTemporaryPassword, updateJobPostHTML } from "./helper";
 
 export const isAuthenticated = (req, res, next) => {
   let token = req.get("Authorization");
@@ -126,6 +126,20 @@ export const sendEmailJobPostUpdated = async (email, data) => { try {
     to: email,
     subject: `${data.name} Required`,
     text: `A job post has been recently updated which requires skill proficiency like yours, Check it out on Talent Qwest`,
+    html: html_body, // html body
+  };
+  let result = await wrapedSendMail(mailOptions);
+  return result;
+} catch (e) {
+  console.log(e);
+}}
+
+export const sendEmailTemporaryPassword = async (data) => { try {
+  var html_body = sendTemporaryPassword(data);
+  var mailOptions = {
+    to: data.email,
+    subject: `Temporary Password Created`,
+    text: `Temporary Password has been created! Use this to login now: ${data.password}`,
     html: html_body, // html body
   };
   let result = await wrapedSendMail(mailOptions);
