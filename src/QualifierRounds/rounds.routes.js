@@ -37,6 +37,6 @@ router.post(
 router.post("/addquestion-round-two", isAuthenticated, addQuestionnaireRoundTwo)
 router.post("/add-round-one", isAuthenticated, addRoundOne)
 router.post("/add-round-two", isAuthenticated, addRoundTwo)
-router.post("/update-round-one", isAuthenticated, updateRoundTwo);
+router.post("/update-round-two", isAuthenticated, updateRoundTwo);
 
 module.exports = router;

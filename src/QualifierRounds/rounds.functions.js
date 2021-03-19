@@ -1,7 +1,10 @@
 /* eslint-disable no-undef */
 import { query } from "../index";
 import { localStorage } from "../auth/localstorage";
-import { sendEmailCongoRoundOne, sendEmailCongoRoundTwo } from "../auth/authentication";
+import {
+  sendEmailCongoRoundOne,
+  sendEmailCongoRoundTwo,
+} from "../auth/authentication";
 import {
   validateQuestionnaireRO,
   validateQuestionnaireRT,
@@ -754,11 +757,13 @@ export const updateRoundTwo = async (req, res) => {
       }
 
       await query(`insert into marks_two (id,job_id,marks,qualified) 
-      values (${req.user[0].id}, ${req.body.job_id}, ${req.body.score}, ${qualified})`);
+      values (${req.user[0].id}, ${req.body.job_id}, ${
+        req.body.score ? req.body.score : 0
+      }, ${qualified})`);
 
-      await query(`update user_status set mark_two=${req.body.score}, status=${
-        qualified ? `2` : `1`
-      } 
+      await query(`update user_status set mark_two=${
+        req.body.score ? req.body.score : 0
+      }, status=${qualified ? `2` : `1`} 
       where id=${req.user[0].id} and job_id=${req.body.job_id}`);
 
       const result3 = await query(
