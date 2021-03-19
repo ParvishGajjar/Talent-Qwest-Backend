@@ -10,6 +10,7 @@ import {
   addRoundOne,
   addRoundTwo,
   fetchRoundTwoQuestionnaire,
+  updateRoundTwo,
 } from "./rounds.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -36,5 +37,6 @@ router.post(
 router.post("/addquestion-round-two", isAuthenticated, addQuestionnaireRoundTwo)
 router.post("/add-round-one", isAuthenticated, addRoundOne)
 router.post("/add-round-two", isAuthenticated, addRoundTwo)
+router.post("/update-round-one", isAuthenticated, updateRoundTwo);
 
 module.exports = router;

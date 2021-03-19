@@ -1,12 +1,12 @@
 /* eslint-disable no-undef */
 import { query } from "../index";
 import { localStorage } from "../auth/localstorage";
-import { sendEmailCongoRoundOne } from "../auth/authentication";
+import { sendEmailCongoRoundOne, sendEmailCongoRoundTwo } from "../auth/authentication";
 import {
   validateQuestionnaireRO,
   validateQuestionnaireRT,
   validateRoundOneQ,
-  validateRoundTwoQ
+  validateRoundTwoQ,
 } from "../Validation/validateRounds";
 const AWS = require("aws-sdk");
 
@@ -318,19 +318,18 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
       where user_job.user_id=${req.user[0].id} and user_job.job_id=${req.params.jobId}
       order by cl_id ASC;`
     );
-    console.log(userLanguages)
+    console.log(userLanguages);
     if (userLanguages[0].job_id) {
       var fetchQuestions = `select * from round_two where cl_id=${userLanguages[0].cl_id}`;
       userLanguages.forEach((value, key) => {
         if (key != 0 && value.cl_id != 9 && value.cl_id != 10) {
           fetchQuestions += ` or cl_id=${value.cl_id}`;
-        } 
+        }
       });
       const dataFetched = await query(
-        fetchQuestions +
-          ` order by RAND() LIMIT 5`
+        fetchQuestions + ` order by RAND() LIMIT 5`
       );
-      console.log(dataFetched)
+      console.log(dataFetched);
       const markstwo = await query(`select marks from marks_two  
       where marks_two.id=${req.user[0].id} and marks_two.job_id=${req.params.jobId}`);
       const jc = await query(
@@ -389,7 +388,6 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
       .json({ data: false, message: `fail`, status: false });
   }
 };
-
 
 export const updateRoundOne = async (req, res) => {
   let qualified = 0;
@@ -724,6 +722,64 @@ export const addRoundTwo = async (req, res) => {
       "${req.body.correct_answer}")`);
       await query(`update uploads set is_used=1 where id=${req.body.link_id}`);
       await query(`commit;`);
+      return res
+        .status(200)
+        .json({ data: true, message: `Data updated`, status: true });
+    } catch (e) {
+      console.log(e);
+      await query(`rollback;`);
+      return res
+        .status(400)
+        .json({ data: false, message: `fail`, status: false });
+    }
+  } catch (e) {
+    console.log(`Rollback error: `, e);
+    await query(`rollback;`);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const updateRoundTwo = async (req, res) => {
+  let qualified = 0;
+  try {
+    try {
+      await query(`begin;`);
+      const criteria = await query(
+        `select * from job_criteria where id=${req.body.job_id}`
+      );
+      if (criteria[0] && req.body.score >= criteria[0].round_two) {
+        qualified = 1;
+      }
+
+      await query(`insert into marks_two (id,job_id,marks,qualified) 
+      values (${req.user[0].id}, ${req.body.job_id}, ${req.body.score}, ${qualified})`);
+
+      await query(`update user_status set mark_two=${req.body.score}, status=${
+        qualified ? `2` : `1`
+      } 
+      where id=${req.user[0].id} and job_id=${req.body.job_id}`);
+
+      const result3 = await query(
+        `select * from job_post where id=${req.body.job_id}`
+      );
+
+      await query(
+        `insert into notifications (user_id,message) values (${
+          req.user[0].id
+        },"${
+          qualified
+            ? `Congratulations! You qualified second round for job position of ${result3[0].name}`
+            : `Sorry, You didn't meet the required criteria to become ${result3[0].name}; Good luck next time!`
+        }")`
+      );
+      if (qualified) {
+        await sendEmailCongoRoundTwo(req.user[0].email, result3[0].name);
+      }
+
+      await query(`commit;`);
+
       return res
         .status(200)
         .json({ data: true, message: `Data updated`, status: true });
