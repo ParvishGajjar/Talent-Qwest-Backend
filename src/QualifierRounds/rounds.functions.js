@@ -368,7 +368,7 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
           job_id: req.params.jobId,
         });
       } else {
-        return res.status(404).json({
+        return res.status(200).json({
           data: [],
           message: `No questions found`,
           status: true,
