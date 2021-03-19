@@ -368,7 +368,7 @@ export const viewMyProfile = async (req, res) => {
     } else {
       return res
         .status(404)
-        .json({ data: [], message: `No data found`, status: false });
+        .json({ data: [], message: `No data found`, status: true });
     }
   } catch (e) {
     console.log(e);
