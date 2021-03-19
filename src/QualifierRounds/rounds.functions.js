@@ -275,7 +275,7 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
         });
       });
 
-      if (dataFetched[0].id) {
+      if (dataFetched[0]) {
         return res.status(200).json({
           data: dataFormat,
           message: `Questions fetched`,
@@ -304,6 +304,91 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
       .json({ data: false, message: `fail`, status: false });
   }
 };
+
+export const fetchRoundTwoQuestionnaire = async (req, res) => {
+  try {
+    const userLanguages = await query(
+      `select user_job.job_id, user_job.user_id,job_skill.skill_id as cl_id from 
+      user_job 
+      left join 
+      job_post on user_job.job_id = job_post.id 
+      left join 
+      job_skill on job_post.id=job_skill.id
+      where user_job.user_id=${req.user[0].id} and user_job.job_id=${req.params.jobId}
+      order by cl_id ASC;`
+    );
+    console.log(userLanguages)
+    if (userLanguages[0].job_id) {
+      var fetchQuestions = `select * from round_two where cl_id=${userLanguages[0].cl_id}`;
+      userLanguages.forEach((value, key) => {
+        if (key != 0 && value.cl_id != 9 && value.cl_id != 10) {
+          fetchQuestions += ` or cl_id=${value.cl_id}`;
+        } 
+      });
+      const dataFetched = await query(
+        fetchQuestions +
+          ` order by RAND() LIMIT 5`
+      );
+      console.log(dataFetched)
+      const markstwo = await query(`select marks from marks_two  
+      where marks_two.id=${req.user[0].id} and marks_two.job_id=${req.params.jobId}`);
+      const jc = await query(
+        `select round_two from job_criteria where id=${req.params.jobId}`
+      );
+      var Given = {
+        hasAlreadyGiven: 0,
+        roundTwoCriteria: jc[0].round_two || 11,
+        score: null,
+        hasQualfied: 0,
+      };
+      if (markstwo[0]) {
+        Given.hasAlreadyGiven = 1;
+        Given.score = markstwo[0].marks;
+        if (marksone[0].marks >= Given.roundTwoCriteria) {
+          Given.hasQualfied = 1;
+        }
+      }
+      var dataFormat = [];
+      dataFetched.forEach((value) => {
+        dataFormat.push({
+          question: value.question_link,
+          line_number: value.input_line,
+          answer: value.corrected_answer,
+          question_id: value.id,
+          coding_language_id: value.cl_id,
+        });
+      });
+
+      if (dataFetched[0]) {
+        return res.status(200).json({
+          data: dataFormat,
+          message: `Questions fetched`,
+          status: true,
+          given: Given,
+          job_id: req.params.jobId,
+        });
+      } else {
+        return res.status(404).json({
+          data: [],
+          message: `No questions found`,
+          status: true,
+          given: Given,
+          job_id: req.params.jobId,
+        });
+      }
+    } else {
+      return res
+        .status(400)
+        .json({ data: false, message: `Apply for the Job`, status: false });
+    }
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
 
 export const updateRoundOne = async (req, res) => {
   let qualified = 0;
