@@ -848,7 +848,7 @@ export const updatePassword = async (req, res) => {
       }
     }
     return res
-      .status(400)
+      .status(200)
       .json({ data: false, message: `Password Invalid`, status: false });
   } catch (e) {
     res.status(400).json({
