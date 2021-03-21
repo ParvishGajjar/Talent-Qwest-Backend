@@ -459,7 +459,8 @@ export const hrRoundOne = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, user_status.mark_one, user_status.review_one, job_criteria.round_one 
+    job_post.name, job_post.id as job_id, 
+    user_status.mark_one, user_status.given_round_one, user_status.review_one, job_criteria.round_one 
     from user_job
     left join user_info on user_info.id=user_job.user_id
     left join job_post on user_job.job_id=job_post.id
@@ -480,7 +481,11 @@ export const hrRoundOne = async (req, res) => {
       });
       result.forEach((item) => {
         if (!item.mark_one) {
-          notgiven = 1;
+          if (item.given_round_one) {
+            fail = 1;
+          } else {
+            notgiven = 1;
+          }
         } else {
           percentage = (item.mark_one / 20) * 100;
           if (item.mark_one >= item.round_one) {
@@ -537,7 +542,8 @@ export const filterHrRoundOne = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, user_status.mark_one, user_status.review_one, job_criteria.round_one 
+    job_post.name, job_post.id as job_id, 
+    user_status.mark_one, user_status.review_one, user_status.given_round_one, job_criteria.round_one 
     from user_job
     left join user_info on user_info.id=user_job.user_id
     left join job_post on user_job.job_id=job_post.id
@@ -564,7 +570,11 @@ export const filterHrRoundOne = async (req, res) => {
       });
       result.forEach((item) => {
         if (!item.mark_one) {
-          notgiven = 1;
+          if (item.given_round_one) {
+            fail = 1;
+          } else {
+            notgiven = 1;
+          }
         } else {
           percentage = (item.mark_one / 20) * 100;
           if (item.mark_one >= item.round_one) {
@@ -644,7 +654,8 @@ export const hrRoundTwo = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, user_status.mark_two, user_status.review_two, job_criteria.round_two 
+    job_post.name, job_post.id as job_id, 
+    user_status.mark_two, user_status.review_two, user_status.given_round_two, job_criteria.round_two 
     from user_job
     left join user_info on user_info.id=user_job.user_id
     left join job_post on user_job.job_id=job_post.id
@@ -666,7 +677,11 @@ export const hrRoundTwo = async (req, res) => {
       });
       result.forEach((item) => {
         if (!item.mark_two) {
-          notgiven = 1;
+          if (item.given_round_two) {
+            fail = 1;
+          } else {
+            notgiven = 1;
+          }
         } else {
           percentage = (item.mark_two / 20) * 100;
           if (item.mark_two >= item.round_two) {
@@ -723,7 +738,8 @@ export const filterHrRoundTwo = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, user_status.mark_one, user_status.review_one, job_criteria.round_one 
+    job_post.name, job_post.id as job_id, 
+    user_status.mark_one, user_status.review_one, user_status.given_round_two, job_criteria.round_one 
     from user_job
     left join user_info on user_info.id=user_job.user_id
     left join job_post on user_job.job_id=job_post.id
@@ -751,7 +767,11 @@ export const filterHrRoundTwo = async (req, res) => {
       });
       result.forEach((item) => {
         if (!item.mark_two) {
-          notgiven = 1;
+          if (item.given_round_two) {
+            fail = 1;
+          } else {
+            notgiven = 1;
+          }
         } else {
           percentage = (item.mark_two / 20) * 100;
           if (item.mark_two >= item.round_two) {
