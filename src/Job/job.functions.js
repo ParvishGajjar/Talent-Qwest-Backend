@@ -536,6 +536,7 @@ export const hrRoundOne = async (req, res) => {
 export const filterHrRoundOne = async (req, res) => {
   let output = [];
   let job_position = [];
+  let userId = [];
   let pass = 0;
   let fail = 0;
   let notgiven = 0;
@@ -552,55 +553,103 @@ export const filterHrRoundOne = async (req, res) => {
     where job_post.is_open = 0 and user_info.is_verified=1 
     ${
       req.query.username == 1
-        ? `and user_info.user_name LIKE "%${req.query.pattern}%";`
+        ? `and (user_info.user_name LIKE "%${req.query.pattern}%" || user_info.firstname LIKE "%${req.query.pattern}%" 
+        || user_info.lastname LIKE "%${req.query.pattern}%");`
         : req.query.position == 1
         ? `and job_post.name LIKE "%${req.query.pattern}%";`
         : `;`
     }`);
     if (result[0]) {
-      result.forEach((item) => {
-        if (!job_position.includes(item.name)) {
-          output.push({
-            job_id: item.job_id,
-            job_position: item.name,
-            users: [],
-          });
-          job_position.push(item.name);
-        }
-      });
-      result.forEach((item) => {
-        if (!item.mark_one) {
-          if (item.given_round_one) {
-            fail = 1;
-          } else {
-            notgiven = 1;
+      if (req.query.username == 1) {
+        result.forEach((item) => {
+          if (!userId.includes(item.id)) {
+            output.push({
+              user_id: item.id,
+              username: item.user_name,
+              firstname: item.firstname,
+              lastname: item.lastname,
+              jobs: [],
+            });
+            userId.push(item.id);
           }
-        } else {
-          percentage = (item.mark_one / 20) * 100;
-          if (item.mark_one >= item.round_one) {
-            pass = 1;
-          } else {
-            fail = 1;
-          }
-        }
-        output[_.indexOf(job_position, item.name)]["users"].push({
-          user_id: item.id,
-          firstname: item.firstname,
-          lastname: item.lastname,
-          username: item.user_name,
-          round_one_score: item.mark_one,
-          round_one_criteria: item.round_one,
-          review: item.review_one,
-          pass,
-          fail,
-          notgiven,
-          percentage,
         });
-        notgiven = 0;
-        pass = 0;
-        fail = 0;
-        percentage = 0;
-      });
+        result.forEach((item) => {
+          if (!item.mark_one) {
+            if (item.given_round_one) {
+              fail = 1;
+            } else {
+              notgiven = 1;
+            }
+          } else {
+            percentage = (item.mark_one / 20) * 100;
+            if (item.mark_one >= item.round_one) {
+              pass = 1;
+            } else {
+              fail = 1;
+            }
+          }
+          output[_.indexOf(userId, item.id)]["jobs"].push({
+            job_id: item.job_id,
+            job_title: item.name,
+            round_one_score: item.mark_one,
+            round_one_criteria: item.round_one,
+            review: item.review_one,
+            pass,
+            fail,
+            notgiven,
+            percentage,
+          });
+          notgiven = 0;
+          pass = 0;
+          fail = 0;
+          percentage = 0;
+        });
+      } else {
+        result.forEach((item) => {
+          if (!job_position.includes(item.name)) {
+            output.push({
+              job_id: item.job_id,
+              job_position: item.name,
+              users: [],
+            });
+            job_position.push(item.name);
+          }
+        });
+        result.forEach((item) => {
+          if (!item.mark_one) {
+            if (item.given_round_one) {
+              fail = 1;
+            } else {
+              notgiven = 1;
+            }
+          } else {
+            percentage = (item.mark_one / 20) * 100;
+            if (item.mark_one >= item.round_one) {
+              pass = 1;
+            } else {
+              fail = 1;
+            }
+          }
+          output[_.indexOf(job_position, item.name)]["users"].push({
+            user_id: item.id,
+            firstname: item.firstname,
+            lastname: item.lastname,
+            username: item.user_name,
+            round_one_score: item.mark_one,
+            round_one_criteria: item.round_one,
+            review: item.review_one,
+            pass,
+            fail,
+            notgiven,
+            percentage,
+          });
+          notgiven = 0;
+          pass = 0;
+          fail = 0;
+          percentage = 0;
+        });
+      }
+
       return res.status(200).json({
         data: output,
         message: `Data fetched`,
@@ -732,6 +781,7 @@ export const hrRoundTwo = async (req, res) => {
 export const filterHrRoundTwo = async (req, res) => {
   let output = [];
   let job_position = [];
+  let userId = [];
   let pass = 0;
   let fail = 0;
   let notgiven = 0;
@@ -749,55 +799,103 @@ export const filterHrRoundTwo = async (req, res) => {
     and user_status.mark_one>=job_criteria.round_one 
     ${
       req.query.username == 1
-        ? ` and user_info.user_name LIKE "%${req.query.pattern}%";`
+        ? ` and (user_info.user_name LIKE "%${req.query.pattern}%" || user_info.firstname LIKE "%${req.query.pattern}%" 
+        || user_info.lastname LIKE "%${req.query.pattern}%");`
         : req.query.position == 1
         ? ` and job_post.name LIKE "%${req.query.pattern}%";`
         : `;`
     }`);
     if (result[0]) {
-      result.forEach((item) => {
-        if (!job_position.includes(item.name)) {
-          output.push({
-            job_id: item.job_id,
-            job_position: item.name,
-            users: [],
-          });
-          job_position.push(item.name);
-        }
-      });
-      result.forEach((item) => {
-        if (!item.mark_two) {
-          if (item.given_round_two) {
-            fail = 1;
-          } else {
-            notgiven = 1;
+      if (req.query.username == 1) {
+        result.forEach((item) => {
+          if (!userId.includes(item.id)) {
+            output.push({
+              user_id: item.id,
+              username: item.user_name,
+              firstname: item.firstname,
+              lastname: item.lastname,
+              jobs: [],
+            });
+            userId.push(item.id);
           }
-        } else {
-          percentage = (item.mark_two / 20) * 100;
-          if (item.mark_two >= item.round_two) {
-            pass = 1;
-          } else {
-            fail = 1;
-          }
-        }
-        output[_.indexOf(job_position, item.name)]["users"].push({
-          user_id: item.id,
-          firstname: item.firstname,
-          lastname: item.lastname,
-          username: item.user_name,
-          round_two_score: item.mark_two,
-          round_two_criteria: item.round_two,
-          review: item.review_two,
-          pass,
-          fail,
-          notgiven,
-          percentage,
         });
-        notgiven = 0;
-        pass = 0;
-        fail = 0;
-        percentage = 0;
-      });
+        result.forEach((item) => {
+          if (!item.mark_two) {
+            if (item.given_round_two) {
+              fail = 1;
+            } else {
+              notgiven = 1;
+            }
+          } else {
+            percentage = (item.mark_two / 20) * 100;
+            if (item.mark_two >= item.round_two) {
+              pass = 1;
+            } else {
+              fail = 1;
+            }
+          }
+          output[_.indexOf(userId, item.id)]["jobs"].push({
+            job_id: item.job_id,
+            job_title: item.name,
+            round_two_score: item.mark_two,
+            round_two_criteria: item.round_two,
+            review: item.review_two,
+            pass,
+            fail,
+            notgiven,
+            percentage,
+          });
+          notgiven = 0;
+          pass = 0;
+          fail = 0;
+          percentage = 0;
+        });
+      } else {
+        result.forEach((item) => {
+          if (!job_position.includes(item.name)) {
+            output.push({
+              job_id: item.job_id,
+              job_position: item.name,
+              users: [],
+            });
+            job_position.push(item.name);
+          }
+        });
+        result.forEach((item) => {
+          if (!item.mark_two) {
+            if (item.given_round_two) {
+              fail = 1;
+            } else {
+              notgiven = 1;
+            }
+          } else {
+            percentage = (item.mark_two / 20) * 100;
+            if (item.mark_two >= item.round_two) {
+              pass = 1;
+            } else {
+              fail = 1;
+            }
+          }
+          output[_.indexOf(job_position, item.name)]["users"].push({
+            user_id: item.id,
+            firstname: item.firstname,
+            lastname: item.lastname,
+            username: item.user_name,
+            round_two_score: item.mark_two,
+            round_two_criteria: item.round_two,
+            review: item.review_two,
+            pass,
+            fail,
+            notgiven,
+            percentage,
+          });
+          notgiven = 0;
+          pass = 0;
+          fail = 0;
+          percentage = 0;
+        });
+      }
+
       return res.status(200).json({
         data: output,
         message: `Data fetched`,
