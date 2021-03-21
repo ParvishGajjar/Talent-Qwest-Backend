@@ -16,7 +16,8 @@ import {
   hrRoundTwo,
   filterHrRoundTwo,
   updateReviewRoundTwo,
-  updateJobPost
+  updateJobPost,
+  exportToCSV
 } from "./job.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -40,5 +41,5 @@ router.get("/filter-hr-round-two", isAuthenticated, filterHrRoundTwo);
 router.post("/update-review-one", isAuthenticated, updateReviewRoundOne);
 router.post("/update-review-two", isAuthenticated, updateReviewRoundTwo);
 router.post("/update-job-post/:jobId", isAuthenticated, updateJobPost);
-
+router.post("/export-to-csv", isAuthenticated, exportToCSV)
 module.exports = router;

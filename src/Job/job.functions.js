@@ -6,6 +6,7 @@ import {
   sendEmailNewJobPost,
 } from "../auth/authentication";
 import * as _ from "lodash";
+import { ExportToCsv } from "export-to-csv";
 
 export const applyForJob = async (req, res) => {
   try {
@@ -1040,6 +1041,94 @@ export const updateJobPost = async (req, res) => {
     }
   } catch (e) {
     console.log("Error rolling back: ", e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const exportToCSV = async (req, res) => {
+  try {
+    let data = [];
+    if (req.body.isSearched) {
+      if (req.body.byusername) {
+        req.body.input_data.forEach((item) => {
+          item.jobs.forEach((val) => {
+            data.push({
+              user_id: item.user_id,
+              firstname: item.firstname,
+              lastname: item.lastname,
+              username: item.username,
+              job_id: val.job_id,
+              job_title: val.job_title,
+              score: val.percentage,
+              status: val.notgiven
+                ? "Not Given"
+                : val.pass
+                ? "Passed"
+                : "Failed",
+              review: val.review === null? 'Not Given Yet': val.review,
+            });
+          });
+        });
+      } else {
+        req.body.input_data.forEach((item) => {
+          item.users.forEach((val) => {
+            data.push({
+              job_id: item.job_id,
+              job_title: item.job_position,
+              user_id: val.user_id,
+              firstname: val.firstname,
+              lastname: val.lastname,
+              username: val.username,
+              score: val.percentage,
+              status: val.notgiven
+                ? "Not Given"
+                : val.pass
+                ? "Passed"
+                : "Failed",
+              review: val.review === null? 'Not Given Yet': val.review,
+            });
+          });
+        });
+      }
+    } else {
+      req.body.input_data.forEach((item) => {
+        item.users.forEach((val) => {
+          data.push({
+            job_id: item.job_id,
+            job_title: item.job_position,
+            user_id: val.user_id,
+            firstname: val.firstname,
+            lastname: val.lastname,
+            username: val.username,
+            score: val.percentage,
+            status: val.notgiven ? "Not Given" : val.pass ? "Passed" : "Failed",
+            review: val.review === null? 'Not Given Yet': val.review,
+          });
+        });
+      });
+    }
+    const options = {
+      fieldSeparator: ",",
+      quoteStrings: '"',
+      decimalSeparator: ".",
+      showLabels: true,
+      showTitle: false,
+      title: "Rounds CSV",
+      useTextFile: false,
+      useBom: true,
+      useKeysAsHeaders: true,
+      // headers: ['Column 1', 'Column 2', etc...] <-- Won't work with useKeysAsHeaders present!
+    };
+    const csvExporter = new ExportToCsv(options);
+    const output = csvExporter.generateCsv(data, true);
+    console.log(output)
+    return res.status(200).attachment('data.csv').send(output)
+  } catch (e) {
+    console.log(e);
     return res.status(400).json({
       data: false,
       message: `fail`,
