@@ -45,12 +45,12 @@ router.post("/add-round-one", isAuthenticated, addRoundOne);
 router.post("/add-round-two", isAuthenticated, addRoundTwo);
 router.post("/update-round-two", isAuthenticated, updateRoundTwo);
 router.post(
-  "/update-hasgiven-roundone",
+  "/update-hasgiven-roundone/:jobId",
   isAuthenticated,
   updateHasGivenRoundOne
 );
 router.post(
-  "/update-hasgiven-roundtwo",
+  "/update-hasgiven-roundtwo/:jobId",
   isAuthenticated,
   updateHasGivenRoundTwo
 );
