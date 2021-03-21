@@ -289,6 +289,7 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
           status: true,
           given: Given,
           job_id: req.params.jobId,
+          user_status: userstatus,
         });
       } else {
         return res.status(404).json({
@@ -376,6 +377,7 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
           status: true,
           given: Given,
           job_id: req.params.jobId,
+          user_status: userstatus,
         });
       } else {
         return res.status(200).json({
