@@ -11,6 +11,8 @@ import {
   addRoundTwo,
   fetchRoundTwoQuestionnaire,
   updateRoundTwo,
+  updateHasGivenRoundOne,
+  updateHasGivenRoundTwo,
 } from "./rounds.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -34,9 +36,23 @@ router.post(
   [isAuthenticated, upload.single("code-snippet")],
   uploadCodeSnippetRoundTwo
 );
-router.post("/addquestion-round-two", isAuthenticated, addQuestionnaireRoundTwo)
-router.post("/add-round-one", isAuthenticated, addRoundOne)
-router.post("/add-round-two", isAuthenticated, addRoundTwo)
+router.post(
+  "/addquestion-round-two",
+  isAuthenticated,
+  addQuestionnaireRoundTwo
+);
+router.post("/add-round-one", isAuthenticated, addRoundOne);
+router.post("/add-round-two", isAuthenticated, addRoundTwo);
 router.post("/update-round-two", isAuthenticated, updateRoundTwo);
+router.post(
+  "/update-hasgiven-roundone",
+  isAuthenticated,
+  updateHasGivenRoundOne
+);
+router.post(
+  "/update-hasgiven-roundtwo",
+  isAuthenticated,
+  updateHasGivenRoundTwo
+);
 
 module.exports = router;

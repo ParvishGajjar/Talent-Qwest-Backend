@@ -250,6 +250,9 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
       const jc = await query(
         `select round_one from job_criteria where id=${req.params.jobId}`
       );
+      const userstatus = await query(
+        `select * from user_status where id=${req.user[0].id} and job_id=${req.params.jobId}`
+      );
       var Given = {
         hasAlreadyGiven: 0,
         roundOneCriteria: jc[0].round_one || 11,
@@ -294,6 +297,7 @@ export const fetchRoundOneQuestionnaire = async (req, res) => {
           status: true,
           given: Given,
           job_id: req.params.jobId,
+          user_status: userstatus,
         });
       }
     } else {
@@ -338,6 +342,9 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
       const jc = await query(
         `select round_two from job_criteria where id=${req.params.jobId}`
       );
+      const userstatus = await query(
+        `select * from user_status where id=${req.user[0].id} and job_id=${req.params.jobId}`
+      );
       var Given = {
         hasAlreadyGiven: 0,
         roundTwoCriteria: jc[0].round_two || 11,
@@ -377,6 +384,7 @@ export const fetchRoundTwoQuestionnaire = async (req, res) => {
           status: true,
           given: Given,
           job_id: req.params.jobId,
+          user_status: userstatus,
         });
       }
     } else {
@@ -798,6 +806,58 @@ export const updateRoundTwo = async (req, res) => {
   } catch (e) {
     console.log(`Rollback error: `, e);
     await query(`rollback;`);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const updateHasGivenRoundOne = async (req, res) => {
+  try {
+    const result = await query(
+      `update user_status set given_round_one=1 where id=${req.user[0].id} and job_id=${req.params.jobId}`
+    );
+    if (result.affectedRows) {
+      return res.status(200).json({
+        data: true,
+        message: "data updated",
+        json: true,
+      });
+    } else {
+      return res.status(400).json({
+        data: false,
+        message: `something went wrong`,
+        status: false,
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
+export const updateHasGivenRoundTwo = async (req, res) => {
+  try {
+    const result = await query(
+      `update user_status set given_round_two=1 where id=${req.user[0].id} and job_id=${req.params.jobId}`
+    );
+    if (result.affectedRows) {
+      return res.status(200).json({
+        data: true,
+        message: "data updated",
+        json: true,
+      });
+    } else {
+      return res.status(400).json({
+        data: false,
+        message: `something went wrong`,
+        status: false,
+      });
+    }
+  } catch (e) {
+    console.log(e);
     return res
       .status(400)
       .json({ data: false, message: `fail`, status: false });
