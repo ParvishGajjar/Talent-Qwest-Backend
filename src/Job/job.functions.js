@@ -1,7 +1,10 @@
 import { query } from "../index";
 import { split } from "lodash";
 import { validateJobPost } from "../Validation/validateRounds";
-import { sendEmailJobPostUpdated, sendEmailNewJobPost } from "../auth/authentication";
+import {
+  sendEmailJobPostUpdated,
+  sendEmailNewJobPost,
+} from "../auth/authentication";
 import * as _ from "lodash";
 
 export const applyForJob = async (req, res) => {
@@ -209,6 +212,8 @@ export const jobsRoundOne = async (req, res) => {
           job_post.id in (select user_job.job_id from user_job where user_job.user_id = ${req.user[0].id})
           and 
           job_post.id not in (select marks_one.job_id from marks_one where marks_one.id = ${req.user[0].id})
+          and 
+          job_post.id not in (select user_status.job_id from user_status where user_status.id=${req.user[0].id} and user_status.given_round_one=1)          
           group by job_post.id;`);
     result.forEach((value) => {
       value.Required_Skills = split(value.Required_Skills, "|");
@@ -252,6 +257,8 @@ export const jobsRoundTwo = async (req, res) => {
     job_post.id in (select user_status.job_id from user_status left join job_criteria
         on user_status.job_id=job_criteria.id 
         where user_status.id=${req.user[0].id} and mark_one>=round_one)
+    and 
+    job_post.id not in (select user_status.job_id from user_status where user_status.id=${req.user[0].id} and user_status.given_round_two=1)
     group by job_post.id;`);
     result.forEach((value) => {
       value.Required_Skills = split(value.Required_Skills, "|");

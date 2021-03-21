@@ -417,7 +417,7 @@ export const updateRoundOne = async (req, res) => {
       await query(`insert into marks_one (id,job_id,marks,qualified) 
       values (${req.user[0].id}, ${req.body.job_id}, ${req.body.score}, ${qualified})`);
 
-      await query(`update user_status set mark_one=${req.body.score}, status=${qualified} 
+      await query(`update user_status set mark_one=${req.body.score}, status=${qualified}, given_round_one=1   
       where id=${req.user[0].id} and job_id=${req.body.job_id}`);
 
       const result3 = await query(
@@ -773,7 +773,7 @@ export const updateRoundTwo = async (req, res) => {
 
       await query(`update user_status set mark_two=${
         req.body.score ? req.body.score : 0
-      }, status=${qualified ? `2` : `1`} 
+      }, status=${qualified ? `2` : `1`}, given_round_two=1 
       where id=${req.user[0].id} and job_id=${req.body.job_id}`);
 
       const result3 = await query(
