@@ -51,7 +51,7 @@ import {
   createInstitutionRoleText,
   splitParagraphIntoBullets,
 } from "../auth/resumebuilding.functions";
-import { table } from "console";
+import { Buffer } from "buffer";
 
 export const updateBasicInformation = async (req, res) => {
   const { validationError, isValid } = basicInformation(req.body);
@@ -905,7 +905,7 @@ export const generateResume = async (req, res) => {
           {
             children: [
               new Paragraph({
-                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                text: `${req.body.firstname} ${req.body.lastname}`,
                 alignment: AlignmentType.CENTER,
                 heading: HeadingLevel.TITLE,
               }),
@@ -920,10 +920,10 @@ export const generateResume = async (req, res) => {
                 )}`,
                 alignment: AlignmentType.CENTER,
               }),
-              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              createContactInfo(req.body.phoneno, req.body.email),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                text: `Address: ${req.user[0].address}`,
+                text: `Address: ${req.body.address}`,
               }),
               new Paragraph({
                 text: "\n",
@@ -1302,7 +1302,7 @@ export const generateResume = async (req, res) => {
           {
             children: [
               new Paragraph({
-                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                text: `${req.body.firstname} ${req.body.lastname}`,
                 alignment: AlignmentType.CENTER,
                 heading: HeadingLevel.TITLE,
               }),
@@ -1317,10 +1317,10 @@ export const generateResume = async (req, res) => {
                 )}`,
                 alignment: AlignmentType.CENTER,
               }),
-              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              createContactInfo(req.body.phoneno, req.body.email),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                text: `Address: ${req.user[0].address}`,
+                text: `Address: ${req.body.address}`,
               }),
               new Paragraph({
                 text: "\n",
@@ -1661,7 +1661,7 @@ export const generateResume = async (req, res) => {
           {
             children: [
               new Paragraph({
-                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                text: `${req.body.firstname} ${req.body.lastname}`,
                 alignment: AlignmentType.CENTER,
                 heading: HeadingLevel.TITLE,
               }),
@@ -1674,10 +1674,10 @@ export const generateResume = async (req, res) => {
                 )}`,
                 alignment: AlignmentType.CENTER,
               }),
-              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              createContactInfo(req.body.phoneno, req.body.email),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                text: `Address: ${req.user[0].address}`,
+                text: `Address: ${req.body.address}`,
               }),
               new Paragraph({
                 text: "\n",
@@ -2028,7 +2028,7 @@ export const generateResume = async (req, res) => {
           {
             children: [
               new Paragraph({
-                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                text: `${req.body.firstname} ${req.body.lastname}`,
                 alignment: AlignmentType.CENTER,
                 heading: HeadingLevel.TITLE,
               }),
@@ -2043,10 +2043,10 @@ export const generateResume = async (req, res) => {
                 )}`,
                 alignment: AlignmentType.CENTER,
               }),
-              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              createContactInfo(req.body.phoneno, req.body.email),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                text: `Address: ${req.user[0].address}`,
+                text: `Address: ${req.body.address}`,
               }),
               new Paragraph({
                 text: "\n",
@@ -2399,7 +2399,7 @@ export const generateResume = async (req, res) => {
           {
             children: [
               new Paragraph({
-                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                text: `${req.body.firstname} ${req.body.lastname}`,
                 alignment: AlignmentType.CENTER,
                 heading: HeadingLevel.TITLE,
               }),
@@ -2414,10 +2414,10 @@ export const generateResume = async (req, res) => {
                 )}`,
                 alignment: AlignmentType.CENTER,
               }),
-              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              createContactInfo(req.body.phoneno, req.body.email),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                text: `Address: ${req.user[0].address}`,
+                text: `Address: ${req.body.address}`,
               }),
               new Paragraph({
                 text: "\n",
@@ -2761,7 +2761,7 @@ export const generateResume = async (req, res) => {
           {
             children: [
               new Paragraph({
-                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                text: `${req.body.firstname} ${req.body.lastname}`,
                 alignment: AlignmentType.CENTER,
                 heading: HeadingLevel.TITLE,
               }),
@@ -2776,10 +2776,10 @@ export const generateResume = async (req, res) => {
                 )}`,
                 alignment: AlignmentType.CENTER,
               }),
-              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              createContactInfo(req.body.phoneno, req.body.email),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                text: `Address: ${req.user[0].address}`,
+                text: `Address: ${req.body.address}`,
               }),
               new Paragraph({
                 text: "\n",
@@ -3023,11 +3023,14 @@ export const generateResume = async (req, res) => {
         ],
       });
     }
+
     // Packer.toBuffer(doc).then((buffer) => {
-    //   fs.writeFileSync(`resume${Date.now()}.docx`, buffer);
+    //   fs.writeFileSync(`resume.docx`, buffer);
     // });
-    const data = await Packer.toBuffer(doc);
-    return res.status(200).attachment(`myresume.docx`).send(data);
+
+    const b64string = await Packer.toBuffer(doc);
+    res.setHeader("Content-Disposition", "attachment; filename=resume.docx");
+    return res.status(200).send(b64string.toString("base64"));
   } catch (e) {
     console.log(e);
     res.status(400).json({
