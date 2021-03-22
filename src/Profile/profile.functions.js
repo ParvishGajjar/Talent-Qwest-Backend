@@ -24,7 +24,6 @@ import * as fs from "fs";
 import {
   Document,
   HeadingLevel,
-  ImageRun,
   Packer,
   Paragraph,
   AlignmentType,
@@ -911,7 +910,9 @@ export const generateResume = async (req, res) => {
                 heading: HeadingLevel.TITLE,
               }),
               new Paragraph({
-                text: "\n",
+                text: `${req.body.title}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.HEADING_3,
               }),
               new Paragraph({
                 text: `DOB: ${moment(req.body.birthdate).format(
@@ -1306,7 +1307,9 @@ export const generateResume = async (req, res) => {
                 heading: HeadingLevel.TITLE,
               }),
               new Paragraph({
-                text: "\n",
+                text: `${req.body.title}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.HEADING_3,
               }),
               new Paragraph({
                 text: `DOB: ${moment(req.body.birthdate).format(
@@ -2030,7 +2033,9 @@ export const generateResume = async (req, res) => {
                 heading: HeadingLevel.TITLE,
               }),
               new Paragraph({
-                text: "\n",
+                text: `${req.body.title}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.HEADING_3,
               }),
               new Paragraph({
                 text: `DOB: ${moment(req.body.birthdate).format(
@@ -2399,7 +2404,9 @@ export const generateResume = async (req, res) => {
                 heading: HeadingLevel.TITLE,
               }),
               new Paragraph({
-                text: "\n",
+                text: `${req.body.title}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.HEADING_3,
               }),
               new Paragraph({
                 text: `DOB: ${moment(req.body.birthdate).format(
@@ -2759,7 +2766,9 @@ export const generateResume = async (req, res) => {
                 heading: HeadingLevel.TITLE,
               }),
               new Paragraph({
-                text: "\n",
+                text: `${req.body.title}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.HEADING_3,
               }),
               new Paragraph({
                 text: `DOB: ${moment(req.body.birthdate).format(
@@ -3014,6 +3023,9 @@ export const generateResume = async (req, res) => {
         ],
       });
     }
+    // Packer.toBuffer(doc).then((buffer) => {
+    //   fs.writeFileSync(`resume${Date.now()}.docx`, buffer);
+    // });
     const data = await Packer.toBuffer(doc);
     return res.status(200).attachment(`myresume.docx`).send(data);
   } catch (e) {
