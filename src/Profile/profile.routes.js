@@ -13,7 +13,8 @@ import {
   updateSkills,
   updateHobbies,
   updateLanguages,
-  updatePassword
+  updatePassword,
+  generateResume
 } from "./profile.functions";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -34,5 +35,6 @@ router.post("/update-skills", isAuthenticated, updateSkills)
 router.post("/update-hobbies", isAuthenticated, updateHobbies)
 router.post("/update-languages", isAuthenticated, updateLanguages)
 router.post("/change-password", isAuthenticated, updatePassword)
+router.post("/generate-resume", isAuthenticated, generateResume)
 
 module.exports = router;

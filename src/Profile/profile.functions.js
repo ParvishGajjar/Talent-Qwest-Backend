@@ -1,5 +1,6 @@
 import { query } from "../index";
 import * as _ from "lodash";
+import moment from "moment";
 import {
   basicInformation,
   Location,
@@ -19,6 +20,39 @@ import {
   validateSignUpNine,
 } from "../Validation/validateSignUp";
 import { compareSync, genSaltSync, hashSync } from "bcrypt";
+import * as fs from "fs";
+import {
+  Document,
+  HeadingLevel,
+  ImageRun,
+  Packer,
+  Paragraph,
+  AlignmentType,
+  Border,
+  BorderStyle,
+  WidthType,
+  TableCellWidth,
+  Table,
+  TableCell,
+  TableRow,
+  VerticalAlign,
+} from "docx";
+import {
+  createHeading,
+  createSubHeading,
+  createContactInfo,
+  createRoleText,
+  createInstitutionHeader,
+  createBullet,
+  createInterests,
+  createSkillList,
+  createHobbyList,
+  createLanguageList,
+  createPositionDateText,
+  createInstitutionRoleText,
+  splitParagraphIntoBullets,
+} from "../auth/resumebuilding.functions";
+import { table } from "console";
 
 export const updateBasicInformation = async (req, res) => {
   const { validationError, isValid } = basicInformation(req.body);
@@ -306,10 +340,9 @@ export const updateEducationDetails = async (req, res) => {
   try {
     try {
       await query(`begin;`);
-      await query(`delete from user_education where user_id=${req.user[0].id}`);
       if (req.body.qualification.new.length) {
         const newqual = await query(
-          `insert into quaalifcation_list (name) values ("${req.body.qualification.new[0]}")`
+          `insert into qualifcation_list (name) values ("${req.body.qualification.new[0]}")`
         );
         await query(
           `update user_education set institute_name="${req.body.name}", year_of_passing="${req.body.passing_year}",
@@ -851,6 +884,2140 @@ export const updatePassword = async (req, res) => {
       .status(200)
       .json({ data: false, message: `Password Invalid`, status: false });
   } catch (e) {
+    res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};
+
+export const generateResume = async (req, res) => {
+  try {
+    let doc = null;
+    if (
+      req.body.work_experience.length &&
+      req.body.patents.length &&
+      req.body.cetification.length &&
+      req.body.projects.length
+    ) {
+      doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `DOB: ${moment(req.body.birthdate).format(
+                  "DD MMM. YYYY"
+                )}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                text: `Address: ${req.user[0].address}`,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `${req.body.description}`,
+                alignment: AlignmentType.JUSTIFIED,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Education"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.education
+                .map((education) => {
+                  const arr = [];
+                  arr.push(
+                    createInstitutionHeader(
+                      education.institute_name,
+                      `(${education.year_of_passing})`
+                    )
+                  );
+                  arr.push(
+                    createInstitutionRoleText(
+                      `${education.name}`,
+                      `CGPA: ${education.CGPA}`
+                    )
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Work Experience"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.work_experience
+                .map((position) => {
+                  const arr = [];
+                  let current = false;
+                  if (!position.end.length) {
+                    current = true;
+                  }
+                  arr.push(
+                    createInstitutionHeader(
+                      position.company_name,
+                      createPositionDateText(
+                        position.start,
+                        position.end,
+                        current
+                      )
+                    )
+                  );
+                  arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    position.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Skills, Interests and Language Proficiency"),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Table({
+                columnWidths: [3605, 3605, 3205],
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSubHeading("Skills")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Interests")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Language Proficiency")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSkillList(req.body.skills)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createHobbyList(req.body.hobbies)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createLanguageList(req.body.languages)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+                // width: {
+                //   size: ["100%"],
+                //   type: [WidthType],
+                // },
+                tableHeader: true,
+              }),
+              // createSubHeading("Skills"),
+              // createSkillList(req.body.skills),
+              // createSubHeading("Interests"),
+              // createHobbyList(req.body.hobbies),
+              // createSubHeading("Language Proficiency"),
+              // createLanguageList(req.body.languages),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Projects"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.projects
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(
+                    createInstitutionHeader(
+                      item.name,
+                      `Duration: ${item.duration} ${item.duration_name}`
+                    )
+                  );
+                  // arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Patents"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.patents
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.patent_name, ``));
+                  arr.push(
+                    createRoleText(`Patent Number: ${item.patent_number}`)
+                  );
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.patent_description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Certification"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.cetification
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.certificate_name, ``));
+                  arr.push(createRoleText(`${item.description}`));
+
+                  // const bulletPoints = splitParagraphIntoBullets(
+                  //   item.patent_description
+                  // );
+
+                  // bulletPoints.forEach((bulletPoint) => {
+                  //   arr.push(createBullet(bulletPoint));
+                  // });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+            ],
+          },
+        ],
+      });
+    } else if (
+      req.body.patents.length &&
+      req.body.cetification.length &&
+      req.body.projects.length
+    ) {
+      doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `DOB: ${moment(req.body.birthdate).format(
+                  "DD MMM. YYYY"
+                )}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                text: `Address: ${req.user[0].address}`,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `${req.body.description}`,
+                alignment: AlignmentType.JUSTIFIED,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Education"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.education
+                .map((education) => {
+                  const arr = [];
+                  arr.push(
+                    createInstitutionHeader(
+                      education.institute_name,
+                      `(${education.year_of_passing})`
+                    )
+                  );
+                  arr.push(
+                    createInstitutionRoleText(
+                      `${education.name}`,
+                      `CGPA: ${education.CGPA}`
+                    )
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Skills, Interests and Language Proficiency"),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Table({
+                columnWidths: [3605, 3605, 3205],
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSubHeading("Skills")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Interests")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Language Proficiency")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSkillList(req.body.skills)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createHobbyList(req.body.hobbies)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createLanguageList(req.body.languages)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+                // width: {
+                //   size: ["100%"],
+                //   type: [WidthType],
+                // },
+                tableHeader: true,
+              }),
+              // createSubHeading("Skills"),
+              // createSkillList(req.body.skills),
+              // createSubHeading("Interests"),
+              // createHobbyList(req.body.hobbies),
+              // createSubHeading("Language Proficiency"),
+              // createLanguageList(req.body.languages),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Projects"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.projects
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(
+                    createInstitutionHeader(
+                      item.name,
+                      `Duration: ${item.duration} ${item.duration_name}`
+                    )
+                  );
+                  // arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Patents"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.patents
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.patent_name, ``));
+                  arr.push(
+                    createRoleText(`Patent Number: ${item.patent_number}`)
+                  );
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.patent_description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Certification"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.cetification
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.certificate_name, ``));
+                  arr.push(createRoleText(`${item.description}`));
+
+                  // const bulletPoints = splitParagraphIntoBullets(
+                  //   item.patent_description
+                  // );
+
+                  // bulletPoints.forEach((bulletPoint) => {
+                  //   arr.push(createBullet(bulletPoint));
+                  // });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+            ],
+          },
+        ],
+      });
+    } else if (
+      req.body.work_experience.length &&
+      req.body.cetification.length &&
+      req.body.projects.length
+    ) {
+      doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `DOB: ${moment(req.body.birthdate).format(
+                  "DD MMM. YYYY"
+                )}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                text: `Address: ${req.user[0].address}`,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `${req.body.description}`,
+                alignment: AlignmentType.JUSTIFIED,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Education"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.education
+                .map((education) => {
+                  const arr = [];
+                  arr.push(
+                    createInstitutionHeader(
+                      education.institute_name,
+                      `(${education.year_of_passing})`
+                    )
+                  );
+                  arr.push(
+                    createInstitutionRoleText(
+                      `${education.name}`,
+                      `CGPA: ${education.CGPA}`
+                    )
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Work Experience"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.work_experience
+                .map((position) => {
+                  const arr = [];
+                  let current = false;
+                  if (!position.end.length) {
+                    current = true;
+                  }
+                  arr.push(
+                    createInstitutionHeader(
+                      position.company_name,
+                      createPositionDateText(
+                        position.start,
+                        position.end,
+                        current
+                      )
+                    )
+                  );
+                  arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    position.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Skills, Interests and Language Proficiency"),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Table({
+                columnWidths: [3605, 3605, 3205],
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSubHeading("Skills")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Interests")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Language Proficiency")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSkillList(req.body.skills)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createHobbyList(req.body.hobbies)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createLanguageList(req.body.languages)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+                // width: {
+                //   size: ["100%"],
+                //   type: [WidthType],
+                // },
+                tableHeader: true,
+              }),
+              // createSubHeading("Skills"),
+              // createSkillList(req.body.skills),
+              // createSubHeading("Interests"),
+              // createHobbyList(req.body.hobbies),
+              // createSubHeading("Language Proficiency"),
+              // createLanguageList(req.body.languages),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Projects"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.projects
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(
+                    createInstitutionHeader(
+                      item.name,
+                      `Duration: ${item.duration} ${item.duration_name}`
+                    )
+                  );
+                  // arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Certification"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.cetification
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.certificate_name, ``));
+                  arr.push(createRoleText(`${item.description}`));
+
+                  // const bulletPoints = splitParagraphIntoBullets(
+                  //   item.patent_description
+                  // );
+
+                  // bulletPoints.forEach((bulletPoint) => {
+                  //   arr.push(createBullet(bulletPoint));
+                  // });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+            ],
+          },
+        ],
+      });
+    } else if (
+      req.body.work_experience.length &&
+      req.body.patents.length &&
+      req.body.projects.length
+    ) {
+      doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `DOB: ${moment(req.body.birthdate).format(
+                  "DD MMM. YYYY"
+                )}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                text: `Address: ${req.user[0].address}`,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `${req.body.description}`,
+                alignment: AlignmentType.JUSTIFIED,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Education"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.education
+                .map((education) => {
+                  const arr = [];
+                  arr.push(
+                    createInstitutionHeader(
+                      education.institute_name,
+                      `(${education.year_of_passing})`
+                    )
+                  );
+                  arr.push(
+                    createInstitutionRoleText(
+                      `${education.name}`,
+                      `CGPA: ${education.CGPA}`
+                    )
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Work Experience"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.work_experience
+                .map((position) => {
+                  const arr = [];
+                  let current = false;
+                  if (!position.end.length) {
+                    current = true;
+                  }
+                  arr.push(
+                    createInstitutionHeader(
+                      position.company_name,
+                      createPositionDateText(
+                        position.start,
+                        position.end,
+                        current
+                      )
+                    )
+                  );
+                  arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    position.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Skills, Interests and Language Proficiency"),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Table({
+                columnWidths: [3605, 3605, 3205],
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSubHeading("Skills")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Interests")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Language Proficiency")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSkillList(req.body.skills)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createHobbyList(req.body.hobbies)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createLanguageList(req.body.languages)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+                // width: {
+                //   size: ["100%"],
+                //   type: [WidthType],
+                // },
+                tableHeader: true,
+              }),
+              // createSubHeading("Skills"),
+              // createSkillList(req.body.skills),
+              // createSubHeading("Interests"),
+              // createHobbyList(req.body.hobbies),
+              // createSubHeading("Language Proficiency"),
+              // createLanguageList(req.body.languages),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Projects"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.projects
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(
+                    createInstitutionHeader(
+                      item.name,
+                      `Duration: ${item.duration} ${item.duration_name}`
+                    )
+                  );
+                  // arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Patents"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.patents
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.patent_name, ``));
+                  arr.push(
+                    createRoleText(`Patent Number: ${item.patent_number}`)
+                  );
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.patent_description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+            ],
+          },
+        ],
+      });
+    } else if (
+      req.body.work_experience.length &&
+      req.body.patents.length &&
+      req.body.cetification.length
+    ) {
+      doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `DOB: ${moment(req.body.birthdate).format(
+                  "DD MMM. YYYY"
+                )}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                text: `Address: ${req.user[0].address}`,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `${req.body.description}`,
+                alignment: AlignmentType.JUSTIFIED,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Education"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.education
+                .map((education) => {
+                  const arr = [];
+                  arr.push(
+                    createInstitutionHeader(
+                      education.institute_name,
+                      `(${education.year_of_passing})`
+                    )
+                  );
+                  arr.push(
+                    createInstitutionRoleText(
+                      `${education.name}`,
+                      `CGPA: ${education.CGPA}`
+                    )
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Work Experience"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.work_experience
+                .map((position) => {
+                  const arr = [];
+                  let current = false;
+                  if (!position.end.length) {
+                    current = true;
+                  }
+                  arr.push(
+                    createInstitutionHeader(
+                      position.company_name,
+                      createPositionDateText(
+                        position.start,
+                        position.end,
+                        current
+                      )
+                    )
+                  );
+                  arr.push(createRoleText(position.job_title));
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    position.description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Skills, Interests and Language Proficiency"),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Table({
+                columnWidths: [3605, 3605, 3205],
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSubHeading("Skills")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Interests")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Language Proficiency")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSkillList(req.body.skills)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createHobbyList(req.body.hobbies)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createLanguageList(req.body.languages)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+                // width: {
+                //   size: ["100%"],
+                //   type: [WidthType],
+                // },
+                tableHeader: true,
+              }),
+              // createSubHeading("Skills"),
+              // createSkillList(req.body.skills),
+              // createSubHeading("Interests"),
+              // createHobbyList(req.body.hobbies),
+              // createSubHeading("Language Proficiency"),
+              // createLanguageList(req.body.languages),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Patents"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.patents
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.patent_name, ``));
+                  arr.push(
+                    createRoleText(`Patent Number: ${item.patent_number}`)
+                  );
+
+                  const bulletPoints = splitParagraphIntoBullets(
+                    item.patent_description
+                  );
+
+                  bulletPoints.forEach((bulletPoint) => {
+                    arr.push(createBullet(bulletPoint));
+                  });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              createHeading("Certification"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.cetification
+                .map((item) => {
+                  const arr = [];
+
+                  arr.push(createInstitutionHeader(item.certificate_name, ``));
+                  arr.push(createRoleText(`${item.description}`));
+
+                  // const bulletPoints = splitParagraphIntoBullets(
+                  //   item.patent_description
+                  // );
+
+                  // bulletPoints.forEach((bulletPoint) => {
+                  //   arr.push(createBullet(bulletPoint));
+                  // });
+                  arr.push(
+                    new Paragraph({
+                      text: "\n",
+                    })
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+            ],
+          },
+        ],
+      });
+    } else {
+      doc = new Document({
+        sections: [
+          {
+            children: [
+              new Paragraph({
+                text: `${req.user[0].firstname} ${req.user[0].lastname}`,
+                alignment: AlignmentType.CENTER,
+                heading: HeadingLevel.TITLE,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `DOB: ${moment(req.body.birthdate).format(
+                  "DD MMM. YYYY"
+                )}`,
+                alignment: AlignmentType.CENTER,
+              }),
+              createContactInfo(req.user[0].phoneno, req.user[0].email),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                text: `Address: ${req.user[0].address}`,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Paragraph({
+                text: `${req.body.description}`,
+                alignment: AlignmentType.JUSTIFIED,
+              }),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Education"),
+              new Paragraph({
+                text: "\n",
+              }),
+              ...req.body.education
+                .map((education) => {
+                  const arr = [];
+                  arr.push(
+                    createInstitutionHeader(
+                      education.institute_name,
+                      `(${education.year_of_passing})`
+                    )
+                  );
+                  arr.push(
+                    createInstitutionRoleText(
+                      `${education.name}`,
+                      `CGPA: ${education.CGPA}`
+                    )
+                  );
+                  return arr;
+                })
+                .reduce((prev, curr) => prev.concat(curr), []),
+              new Paragraph({
+                text: "\n",
+              }),
+              createHeading("Skills, Interests and Language Proficiency"),
+              new Paragraph({
+                text: "\n",
+              }),
+              new Table({
+                columnWidths: [3605, 3605, 3205],
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSubHeading("Skills")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Interests")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createSubHeading("Language Proficiency")],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({
+                        children: [createSkillList(req.body.skills)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createHobbyList(req.body.hobbies)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                      new TableCell({
+                        children: [createLanguageList(req.body.languages)],
+                        alignment: AlignmentType.CENTER,
+                        verticalAlign: VerticalAlign.CENTER,
+                        width: {
+                          size: 3505,
+                          type: WidthType.DXA,
+                        },
+                        borders: {
+                          top: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          bottom: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          left: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                          right: {
+                            style: BorderStyle.THICK_THIN_MEDIUM_GAP,
+                            size: 5,
+                            color: "blue",
+                          },
+                        },
+                      }),
+                    ],
+                  }),
+                ],
+                // width: {
+                //   size: ["100%"],
+                //   type: [WidthType],
+                // },
+                tableHeader: true,
+              }),
+              // createSubHeading("Skills"),
+              // createSkillList(req.body.skills),
+              // createSubHeading("Interests"),
+              // createHobbyList(req.body.hobbies),
+              // createSubHeading("Language Proficiency"),
+              // createLanguageList(req.body.languages),
+            ],
+          },
+        ],
+      });
+    }
+    const data = await Packer.toBuffer(doc);
+    return res.status(200).attachment(`myresume.docx`).send(data);
+  } catch (e) {
+    console.log(e);
     res.status(400).json({
       data: false,
       message: `fail`,
