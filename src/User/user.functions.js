@@ -4,7 +4,11 @@ import { query } from "../index";
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { localStorage } from "../auth/localstorage";
-import { sendEmailTemporaryPassword, sendEmailVerifyLink } from "../auth/authentication";
+import {
+  sendEmailTemporaryPassword,
+  sendEmailVerifyLink,
+  sendFeedbackEmail,
+} from "../auth/authentication";
 import { validateLogin } from "../Validation/validateLogin";
 import {
   validateSignUp,
@@ -19,6 +23,7 @@ import {
 } from "../Validation/validateSignUp";
 import { randomString } from "../auth/helper";
 import { validateForgetPassword } from "../Validation/validateUpdateProfile";
+import { validateEmail } from "../Validation/checkempty";
 
 export const signup = async (req, res) => {
   const { validationError, isValid } = validateSignUp(req.body);
@@ -270,7 +275,7 @@ export const login = async (req, res) => {
         is_verified: 1,
         signup_pages: signupPages,
         status: true,
-        usertype: user[0].usertype
+        usertype: user[0].usertype,
       });
     } else {
       return res.status(401).json({
@@ -827,7 +832,7 @@ export const signupNine = async (req, res) => {
   }
 };
 
-export const forgetPassword = async (req,res)=>{
+export const forgetPassword = async (req, res) => {
   const { validationError, isValid } = validateForgetPassword(req.body);
   if (!isValid) {
     return res
@@ -835,39 +840,81 @@ export const forgetPassword = async (req,res)=>{
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
-    const randomPassword = randomString(10,'#aA!')
-    const emailExists = await query(`select * from user_info where email="${req.body.email}"`)
-    if(emailExists[0]){
+    const randomPassword = randomString(10, "#aA!");
+    const emailExists = await query(
+      `select * from user_info where email="${req.body.email}"`
+    );
+    if (emailExists[0]) {
       const salt = genSaltSync(10);
       const password = hashSync(randomPassword, salt);
-      const result=await query(`update user_info set password = "${password}" where id=${emailExists[0].id}`)
-      if(result.affectedRows){
-        let data={
+      const result = await query(
+        `update user_info set password = "${password}" where id=${emailExists[0].id}`
+      );
+      if (result.affectedRows) {
+        let data = {
           password: randomPassword,
-          email: emailExists[0].email
-        }
+          email: emailExists[0].email,
+        };
         await sendEmailTemporaryPassword(data);
-        console.log(data)
+        console.log(data);
         return res.status(200).json({
           data: true,
           message: `Temporary password has been sent`,
-          status: true
-        })
+          status: true,
+        });
       } else {
         return res.status(400).json({
           data: false,
           message: `something went wrong`,
-          status: false
-        })
+          status: false,
+        });
       }
     }
     return res.status(400).json({
       data: false,
       message: `Account does not exist`,
-      status: false
-    })
+      status: false,
+    });
   } catch (e) {
-    console.log(e)
-    res.status(400).json({data:false, message: `fail`, status: false})
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
   }
-}
+};
+
+export const contactUs = async (req, res) => {
+  if (!validateEmail(req.body.email)) {
+    return res.status(400).json({
+      data: false,
+      status: false,
+      error: "Invalid Email",
+    });
+  }
+  try {
+    const data = {
+      email: req.body.email,
+      feedback: req.body.feedback,
+    };
+    const result = await sendFeedbackEmail(data);
+    if (result) {
+      return res.status(200).json({
+        data: true,
+        message: `Data Sent`,
+        status: true,
+      });
+    }
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(400).json({
+      data: false,
+      message: `fail`,
+      status: false,
+    });
+  }
+};

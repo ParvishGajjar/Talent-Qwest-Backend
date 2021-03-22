@@ -2,7 +2,14 @@
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 import { query } from "../index";
-import { htmlBody, htmlCongoRO, htmlCongoRT, newJobPostHTML, sendTemporaryPassword, updateJobPostHTML } from "./helper";
+import {
+  htmlBody,
+  htmlCongoRO,
+  htmlCongoRT,
+  newJobPostHTML,
+  sendTemporaryPassword,
+  updateJobPostHTML,
+} from "./helper";
 
 export const isAuthenticated = (req, res, next) => {
   let token = req.get("Authorization");
@@ -76,7 +83,7 @@ async function wrapedSendMail(mailOptions) {
         pass: process.env.GMAIL_PASSWORD,
       },
     });
-    console.log(process.env.GMAIL_PASSWORD,process.env.GMAIL_ID)
+    console.log(process.env.GMAIL_PASSWORD, process.env.GMAIL_ID);
 
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
@@ -122,44 +129,64 @@ export const sendEmailCongoRoundTwo = async (email, name) => {
   }
 };
 
-export const sendEmailNewJobPost = async (email, data) => { try {
-  var html_body = newJobPostHTML(data);
-  var mailOptions = {
-    to: email,
-    subject: `${data.name} Required`,
-    text: `New Job has been recently posted which requires skill proficiency like yours, Check it out on Talent Qwest`,
-    html: html_body, // html body
-  };
-  let result = await wrapedSendMail(mailOptions);
-  return result;
-} catch (e) {
-  console.log(e);
-}}
+export const sendEmailNewJobPost = async (email, data) => {
+  try {
+    var html_body = newJobPostHTML(data);
+    var mailOptions = {
+      to: email,
+      subject: `${data.name} Required`,
+      text: `New Job has been recently posted which requires skill proficiency like yours, Check it out on Talent Qwest`,
+      html: html_body, // html body
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-export const sendEmailJobPostUpdated = async (email, data) => { try {
-  var html_body = updateJobPostHTML(data);
-  var mailOptions = {
-    to: email,
-    subject: `${data.name} Required`,
-    text: `A job post has been recently updated which requires skill proficiency like yours, Check it out on Talent Qwest`,
-    html: html_body, // html body
-  };
-  let result = await wrapedSendMail(mailOptions);
-  return result;
-} catch (e) {
-  console.log(e);
-}}
+export const sendEmailJobPostUpdated = async (email, data) => {
+  try {
+    var html_body = updateJobPostHTML(data);
+    var mailOptions = {
+      to: email,
+      subject: `${data.name} Required`,
+      text: `A job post has been recently updated which requires skill proficiency like yours, Check it out on Talent Qwest`,
+      html: html_body, // html body
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-export const sendEmailTemporaryPassword = async (data) => { try {
-  var html_body = sendTemporaryPassword(data);
-  var mailOptions = {
-    to: data.email,
-    subject: `Temporary Password Created`,
-    text: `Temporary Password has been created! Use this to login now: ${data.password}`,
-    html: html_body, // html body
-  };
-  let result = await wrapedSendMail(mailOptions);
-  return result;
-} catch (e) {
-  console.log(e);
-}}
+export const sendEmailTemporaryPassword = async (data) => {
+  try {
+    var html_body = sendTemporaryPassword(data);
+    var mailOptions = {
+      to: data.email,
+      subject: `Temporary Password Created`,
+      text: `Temporary Password has been created! Use this to login now: ${data.password}`,
+      html: html_body, // html body
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+export const sendFeedbackEmail = async (data) => {
+  try {
+    var mailOptions = {
+      to: `talentqwestcare@gmail.com`,
+      subject: `Feedback by ${data.email}`,
+      text: `Feedback by ${data.email}: ${data.feedback}`,
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};

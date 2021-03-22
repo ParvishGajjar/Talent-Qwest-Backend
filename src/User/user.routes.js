@@ -14,6 +14,7 @@ import {
   signupEight,
   signupNine,
   forgetPassword,
+  contactUs,
 } from "./user.functions.js";
 import express from "express";
 import { isAuthenticated } from "../auth/authentication.js";
@@ -33,5 +34,6 @@ router.post("/signup-seven", isAuthenticated, signupSeven);
 router.post("/signup-eight", isAuthenticated, signupEight);
 router.post("/signup-nine", isAuthenticated, signupNine);
 router.post("/forget-password", forgetPassword)
+router.post("/contact-us", contactUs)
 
 module.exports = router;
