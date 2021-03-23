@@ -554,10 +554,22 @@ export const filterHrRoundOne = async (req, res) => {
     where job_post.is_open = 0 and user_info.is_verified=1 
     ${
       req.query.username == 1
-        ? `and (user_info.user_name LIKE "%${req.query.pattern}%" || user_info.firstname LIKE "%${req.query.pattern}%" 
-        || user_info.lastname LIKE "%${req.query.pattern}%");`
+        ? `and (user_info.user_name LIKE "%${
+            req.query.pattern
+          }%" || user_info.firstname LIKE "%${req.query.pattern}%" 
+        || user_info.lastname LIKE "%${req.query.pattern}%") 
+        ${
+          req.query.orderby.length
+            ? `order by user_status.mark_one ${req.query.orderby};`
+            : `;`
+        }`
         : req.query.position == 1
-        ? `and job_post.name LIKE "%${req.query.pattern}%";`
+        ? `and job_post.name LIKE "%${req.query.pattern}%"
+        ${
+          req.query.orderby.length
+            ? `order by user_status.mark_one ${req.query.orderby};`
+            : `;`
+        }`
         : `;`
     }`);
     if (result[0]) {
@@ -650,7 +662,7 @@ export const filterHrRoundOne = async (req, res) => {
           percentage = 0;
         });
       }
-
+      
       return res.status(200).json({
         data: output,
         message: `Data fetched`,
@@ -800,10 +812,22 @@ export const filterHrRoundTwo = async (req, res) => {
     and user_status.mark_one>=job_criteria.round_one 
     ${
       req.query.username == 1
-        ? ` and (user_info.user_name LIKE "%${req.query.pattern}%" || user_info.firstname LIKE "%${req.query.pattern}%" 
-        || user_info.lastname LIKE "%${req.query.pattern}%");`
+        ? ` and (user_info.user_name LIKE "%${
+            req.query.pattern
+          }%" || user_info.firstname LIKE "%${req.query.pattern}%" 
+        || user_info.lastname LIKE "%${req.query.pattern}%")
+        ${
+          req.query.orderby.length
+            ? `order by user_status.mark_one ${req.query.orderby};`
+            : `;`
+        }`
         : req.query.position == 1
-        ? ` and job_post.name LIKE "%${req.query.pattern}%";`
+        ? ` and job_post.name LIKE "%${req.query.pattern}%" 
+        ${
+          req.query.orderby.length
+            ? `order by user_status.mark_one ${req.query.orderby};`
+            : `;`
+        }`
         : `;`
     }`);
     if (result[0]) {
@@ -961,7 +985,7 @@ export const updateJobPost = async (req, res) => {
     try {
       await query(`begin;`);
 
-      const result = await query(
+      await query(
         `update job_post set name="${req.body.name}",description="${req.body.description}",
         salary="${req.body.salary}",vacancy=${req.body.vacancy} where id=${req.params.jobId};`
       );
@@ -1069,7 +1093,7 @@ export const exportToCSV = async (req, res) => {
                 : val.pass
                 ? "Passed"
                 : "Failed",
-              review: val.review === null? 'Not Given Yet': val.review,
+              review: val.review === null ? "Not Given Yet" : val.review,
             });
           });
         });
@@ -1089,7 +1113,7 @@ export const exportToCSV = async (req, res) => {
                 : val.pass
                 ? "Passed"
                 : "Failed",
-              review: val.review === null? 'Not Given Yet': val.review,
+              review: val.review === null ? "Not Given Yet" : val.review,
             });
           });
         });
@@ -1106,7 +1130,7 @@ export const exportToCSV = async (req, res) => {
             username: val.username,
             score: val.percentage,
             status: val.notgiven ? "Not Given" : val.pass ? "Passed" : "Failed",
-            review: val.review === null? 'Not Given Yet': val.review,
+            review: val.review === null ? "Not Given Yet" : val.review,
           });
         });
       });
@@ -1125,8 +1149,7 @@ export const exportToCSV = async (req, res) => {
     };
     const csvExporter = new ExportToCsv(options);
     const output = csvExporter.generateCsv(data, true);
-    console.log(output)
-    return res.status(200).attachment('data.csv').send(output)
+    return res.status(200).attachment("data.csv").send(output);
   } catch (e) {
     console.log(e);
     return res.status(400).json({

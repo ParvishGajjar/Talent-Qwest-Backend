@@ -41,5 +41,6 @@ router.get("/filter-hr-round-two", isAuthenticated, filterHrRoundTwo);
 router.post("/update-review-one", isAuthenticated, updateReviewRoundOne);
 router.post("/update-review-two", isAuthenticated, updateReviewRoundTwo);
 router.post("/update-job-post/:jobId", isAuthenticated, updateJobPost);
-router.post("/export-to-csv", isAuthenticated, exportToCSV)
+router.post("/export-to-csv", isAuthenticated, exportToCSV);
+
 module.exports = router;
