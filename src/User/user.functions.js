@@ -184,7 +184,7 @@ export const resendEmailLink = async (req, res) => {
           }
           return res.status(200).json({
             data: true,
-            message: `Verification email has been sent`,
+            message: `Verification email has been sent!`,
             token: slicedToken,
             status: true,
           });
