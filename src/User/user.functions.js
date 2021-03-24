@@ -29,7 +29,7 @@ export const signup = async (req, res) => {
   const { validationError, isValid } = validateSignUp(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError });
   }
   const salt = genSaltSync(10);
@@ -82,7 +82,7 @@ export const signup = async (req, res) => {
           `http://13.235.170.141:3400/api/user/email-verify/${jsontoken}`
         );
         if (!emailSent) {
-          return res.status(400).json({
+          return res.status(200).json({
             data: false,
             message: `Unable to send email. Please try again!`,
             status: false,
@@ -176,7 +176,7 @@ export const resendEmailLink = async (req, res) => {
             `http://13.235.170.141:3400/api/user/email-verify/${slicedToken}`
           );
           if (!emailSent) {
-            return res.status(400).json({
+            return res.status(200).json({
               data: false,
               message: `Unable to send email. Please try again!`,
               status: false,
@@ -217,7 +217,7 @@ export const login = async (req, res) => {
     );
     if (!user[0]) {
       return res
-        .status(404)
+        .status(200)
         .json({ data: false, message: `User not found`, status: false });
     }
     if (!user[0].is_verified) {
@@ -234,7 +234,7 @@ export const login = async (req, res) => {
         `http://13.235.170.141:3400/api/user/email-verify/${jsontoken}`
       );
       if (!emailSent) {
-        return res.status(400).json({
+        return res.status(200).json({
           data: false,
           message: `Unable to send email. Please try again!`,
           status: false,
@@ -278,7 +278,7 @@ export const login = async (req, res) => {
         usertype: user[0].usertype,
       });
     } else {
-      return res.status(401).json({
+      return res.status(200).json({
         data: false,
         message: "Invalid email or password",
         status: false,
@@ -325,7 +325,7 @@ export const signupTwo = async (req, res) => {
   const { validationError, isValid } = validateSignUpTwo(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
@@ -358,7 +358,7 @@ export const signupThree = async (req, res) => {
   const { validationError, isValid } = validateSignUpThree(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
@@ -546,7 +546,7 @@ export const signupFour = async (req, res) => {
   const { validationError, isValid } = validateSignUpFour(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
@@ -594,7 +594,7 @@ export const signupFive = async (req, res) => {
   const { validationError, isValid } = validateSignUpFive(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError[0] });
   }
   try {
@@ -643,7 +643,7 @@ export const signupSix = async (req, res) => {
   const { validationError, isValid } = validateSignUpSix(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
@@ -690,7 +690,7 @@ export const signupSeven = async (req, res) => {
   const { validationError, isValid } = validateSignUpSeven(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError[0] });
   }
   try {
@@ -735,7 +735,7 @@ export const signupEight = async (req, res) => {
   const { validationError, isValid } = validateSignUpEight(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError[0] });
   }
   try {
@@ -786,7 +786,7 @@ export const signupNine = async (req, res) => {
   const { validationError, isValid } = validateSignUpNine(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError[0] });
   }
   try {
@@ -836,7 +836,7 @@ export const forgetPassword = async (req, res) => {
   const { validationError, isValid } = validateForgetPassword(req.body);
   if (!isValid) {
     return res
-      .status(400)
+      .status(200)
       .json({ message: "fail", status: false, error: validationError });
   }
   try {
@@ -885,7 +885,7 @@ export const forgetPassword = async (req, res) => {
 
 export const contactUs = async (req, res) => {
   if (!validateEmail(req.body.email)) {
-    return res.status(400).json({
+    return res.status(200).json({
       data: false,
       status: false,
       error: "Invalid Email",
