@@ -91,7 +91,7 @@ export const signup = async (req, res) => {
         await query(`commit;`);
         return res.status(200).json({
           data: true,
-          message: `Verification email has been sent`,
+          message: `Verification email has been sent!`,
           token: jsontoken,
           status: true,
         });
