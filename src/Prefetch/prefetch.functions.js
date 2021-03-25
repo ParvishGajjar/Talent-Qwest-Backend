@@ -510,6 +510,38 @@ export const getCodingLanguage = async (req, res) => {
   }
 };
 
+export const getEnoughCodingLanguage = async (req, res) => {
+  try {
+    const result = await query(`select * from coding_list 
+    where 
+    coding_list.id in 
+    (select new_table.cl_id from 
+    (select cl_id, count(*) as 'count' from round_one group by round_one.cl_id) 
+    new_table 
+    left join 
+    (select cl_id, count(*) as 'count' from round_two group by round_two.cl_id) 
+    new_table2 on new_table.cl_id=new_table2.cl_id
+    where new_table.count>=20 && new_table2.count>=5)
+    or id=9 or id=10;`);
+    if (result[0]) {
+      return res.status(200).json({
+        data: result,
+        message: `Coding Languages fetched`,
+        status: true,
+      });
+    } else {
+      return res
+        .status(200)
+        .json({ data: [], message: `No data found`, status: true });
+    }
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
+
 export const fetchUsername = async (req, res) => {
   try {
     const result = await query(`select user_name from user_info`);
