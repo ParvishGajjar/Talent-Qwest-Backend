@@ -564,3 +564,59 @@ export const fetchJobPosition = async (req, res) => {
       .json({ data: false, message: `fail`, status: false });
   }
 };
+
+export const fetchQuestionCount = async (req, res) => {
+  let enough_question_one = [];
+  let enough_question_two = [];
+  let enough_question_one_id = [];
+  let enough_question_two_id = [];
+  try {
+    const result1 = await query(`select coding_list.id, coding_list.name from coding_list 
+    where 
+    coding_list.id in 
+    (select new_table.cl_id from 
+    (select cl_id, count(*) as 'count' from round_one group by round_one.cl_id) 
+    new_table 
+    where new_table.count>=20) 
+    or id=9 or id=10;`);
+    const result2 = await query(`select coding_list.id, coding_list.name from coding_list 
+    where 
+    coding_list.id in 
+    (select new_table.cl_id from 
+    (select cl_id, count(*) as 'count' from round_two group by round_two.cl_id) 
+    new_table 
+    where new_table.count>=5) 
+    or id=9 or id=10;`);
+    if (result1[0]) {
+      enough_question_one = result1.map((val) => {
+        return val.name;
+      });
+      enough_question_one_id = result1.map((val) => {
+        return val.id;
+      });
+    }
+    if (result2[0]) {
+      enough_question_two = result2.map((val) => {
+        return val.name;
+      });
+      enough_question_two_id = result2.map((val) => {
+        return val.id;
+      });
+    }
+    return res.status(200).json({
+      data: {
+        id_one: enough_question_one_id,
+        name_one: enough_question_one,
+        id_two: enough_question_two_id,
+        name_two: enough_question_two,
+      },
+      message: `Coding language id/name with enough question fetched`,
+      status: true,
+    });
+  } catch (e) {
+    console.log(e);
+    return res
+      .status(400)
+      .json({ data: false, message: `fail`, status: false });
+  }
+};
