@@ -4,6 +4,7 @@ import { validateJobPost } from "../Validation/validateRounds";
 import {
   sendEmailJobPostUpdated,
   sendEmailNewJobPost,
+  sendEmailUpdatedStatus,
 } from "../auth/authentication";
 import * as _ from "lodash";
 import { ExportToCsv } from "export-to-csv";
@@ -668,7 +669,7 @@ export const filterHrRoundOne = async (req, res) => {
           percentage = 0;
         });
       }
-      
+
       return res.status(200).json({
         data: output,
         message: `Data fetched`,
@@ -694,6 +695,20 @@ export const updateReviewRoundOne = async (req, res) => {
   try {
     const result = await query(`update user_status set review_one = "${req.body.review}" where id=${req.body.user_id} and 
     job_id=${req.body.job_id}`);
+    if (req.body.review.length) {
+      const email = await query(
+        `select * from user_info where id=${req.body.user_id}`
+      );
+      const jobInfo = await query(
+        `select * from job_post where id=${req.body.job_id}`
+      );
+      let data = {
+        email: email[0].email,
+        job_title: jobInfo[0].name,
+      };
+      await sendEmailUpdatedStatus(data);
+    }
+
     if (result.affectedRows) {
       return res
         .status(200)
@@ -952,6 +967,19 @@ export const updateReviewRoundTwo = async (req, res) => {
   try {
     const result = await query(`update user_status set review_two = "${req.body.review}" where id=${req.body.user_id} and 
     job_id=${req.body.job_id}`);
+    if (req.body.review.length) {
+      const email = await query(
+        `select * from user_info where id=${req.body.user_id}`
+      );
+      const jobInfo = await query(
+        `select * from job_post where id=${req.body.job_id}`
+      );
+      let data = {
+        email: email[0].email,
+        job_title: jobInfo[0].name,
+      };
+      await sendEmailUpdatedStatus(data);
+    }
     if (result.affectedRows) {
       return res
         .status(200)

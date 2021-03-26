@@ -190,3 +190,17 @@ export const sendFeedbackEmail = async (data) => {
     console.log(e);
   }
 };
+
+export const sendEmailUpdatedStatus = async (data) => {
+  try {
+    var mailOptions = {
+      to: data.email,
+      subject: `Status Update`,
+      text: `Review has been recently updated for Job Post, ${data.job_title}`,
+    };
+    let result = await wrapedSendMail(mailOptions);
+    return result;
+  } catch (e) {
+    console.log(e);
+  }
+};
