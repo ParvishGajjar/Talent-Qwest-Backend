@@ -308,6 +308,17 @@ export const viewMyProfile = async (req, res) => {
     const user_social_media = await query(
       `select * from user_socialmedia where user_id=${req.user[0].id};`
     );
+    if (!user_social_media[0]) {
+      user_social_media[0] = {
+        user_id: req.user[0].id,
+        linkedin: "",
+        medium: "",
+        dribbble: "",
+        github: "",
+        instagram: "",
+        twitter: "",
+      };
+    }
     const openJob = await query(`select job_post.id, job_post.name, job_post.description, 
     job_post.salary, job_post.vacancy, job_post.timestamp, job_post.is_open,
     group_concat(coding_list.name separator '|') as 'Required_Skills' 
@@ -455,6 +466,17 @@ export const viewOthersProfile = async (req, res) => {
       value.Required_Skills = split(value.Required_Skills, "|");
     });
     if (profile[0]) {
+      if (!user_social_media[0]) {
+        user_social_media[0] = {
+          user_id: profile[0].id,
+          linkedin: "",
+          medium: "",
+          dribbble: "",
+          github: "",
+          instagram: "",
+          twitter: "",
+        };
+      }
       return res.status(200).json({
         data: [
           {
