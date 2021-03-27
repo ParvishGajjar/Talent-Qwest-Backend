@@ -466,15 +466,23 @@ export const hrRoundOne = async (req, res) => {
   let notgiven = 0;
   let percentage = 0;
   try {
+    // const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
+    // job_post.name, job_post.id as job_id,
+    // user_status.mark_one, user_status.given_round_one, user_status.review_one, job_criteria.round_one
+    // from user_job
+    // left join user_info on user_info.id=user_job.user_id
+    // left join job_post on user_job.job_id=job_post.id
+    // left join user_status on job_post.id = user_status.job_id
+    // left join job_criteria on job_post.id=job_criteria.id
+    // where job_post.is_open = 0 and user_info.is_verified=1;`);
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, 
-    user_status.mark_one, user_status.given_round_one, user_status.review_one, job_criteria.round_one 
-    from user_job
-    left join user_info on user_info.id=user_job.user_id
-    left join job_post on user_job.job_id=job_post.id
-    left join user_status on job_post.id = user_status.job_id
-    left join job_criteria on job_post.id=job_criteria.id
-    where job_post.is_open = 0 and user_info.is_verified=1;`);
+    job_post.name, job_post.id as job_id,
+    user_status.mark_one, user_status.given_round_one, user_status.review_one, job_criteria.round_one
+    from job_criteria
+    left join user_status on job_criteria.id = user_status.job_id
+    left join job_post on user_status.job_id = job_post.id
+    left join user_info on user_status.id = user_info.id
+     where job_post.is_open = 0 and user_info.is_verified=1;`);
 
     if (result[0]) {
       result.forEach((item) => {
@@ -551,14 +559,13 @@ export const filterHrRoundOne = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, 
-    user_status.mark_one, user_status.review_one, user_status.given_round_one, job_criteria.round_one 
-    from user_job
-    left join user_info on user_info.id=user_job.user_id
-    left join job_post on user_job.job_id=job_post.id
-    left join user_status on job_post.id = user_status.job_id
-    left join job_criteria on job_post.id=job_criteria.id
-    where job_post.is_open = 0 and user_info.is_verified=1 
+    job_post.name, job_post.id as job_id,
+    user_status.mark_one, user_status.given_round_one, user_status.review_one, job_criteria.round_one
+    from job_criteria
+    left join user_status on job_criteria.id = user_status.job_id
+    left join job_post on user_status.job_id = job_post.id
+    left join user_info on user_status.id = user_info.id
+     where job_post.is_open = 0 and user_info.is_verified=1
     ${
       req.query.username == 1
         ? `and (user_info.user_name LIKE "%${
@@ -736,16 +743,26 @@ export const hrRoundTwo = async (req, res) => {
   let notgiven = 0;
   let percentage = 0;
   try {
+    // const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
+    // job_post.name, job_post.id as job_id,
+    // user_status.mark_two, user_status.review_two, user_status.given_round_two, job_criteria.round_two
+    // from user_job
+    // left join user_info on user_info.id=user_job.user_id
+    // left join job_post on user_job.job_id=job_post.id
+    // left join user_status on job_post.id = user_status.job_id
+    // left join job_criteria on job_post.id=job_criteria.id
+    // where job_post.is_open = 0 and user_info.is_verified=1
+    // and user_status.mark_one>=job_criteria.round_one;`);
+
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, 
-    user_status.mark_two, user_status.review_two, user_status.given_round_two, job_criteria.round_two 
-    from user_job
-    left join user_info on user_info.id=user_job.user_id
-    left join job_post on user_job.job_id=job_post.id
-    left join user_status on job_post.id = user_status.job_id
-    left join job_criteria on job_post.id=job_criteria.id
-    where job_post.is_open = 0 and user_info.is_verified=1
-    and user_status.mark_one>=job_criteria.round_one;`);
+    job_post.name, job_post.id as job_id,
+    user_status.mark_two, user_status.given_round_two, user_status.review_two, job_criteria.round_two
+    from job_criteria
+    left join user_status on job_criteria.id = user_status.job_id
+    left join job_post on user_status.job_id = job_post.id
+    left join user_info on user_status.id = user_info.id
+     where job_post.is_open = 0 and user_info.is_verified=1
+     and user_status.mark_one>=job_criteria.round_one;`);
 
     if (result[0]) {
       result.forEach((item) => {
@@ -822,15 +839,14 @@ export const filterHrRoundTwo = async (req, res) => {
   let percentage = 0;
   try {
     const result = await query(`select user_info.id, user_info.firstname, user_info.lastname, user_info.user_name,
-    job_post.name, job_post.id as job_id, 
-    user_status.mark_one, user_status.review_one, user_status.given_round_two, job_criteria.round_one 
-    from user_job
-    left join user_info on user_info.id=user_job.user_id
-    left join job_post on user_job.job_id=job_post.id
-    left join user_status on job_post.id = user_status.job_id
-    left join job_criteria on job_post.id=job_criteria.id
-    where job_post.is_open = 0 and user_info.is_verified=1
-    and user_status.mark_one>=job_criteria.round_one 
+    job_post.name, job_post.id as job_id,
+    user_status.mark_two, user_status.given_round_two, user_status.review_two, job_criteria.round_two
+    from job_criteria
+    left join user_status on job_criteria.id = user_status.job_id
+    left join job_post on user_status.job_id = job_post.id
+    left join user_info on user_status.id = user_info.id
+     where job_post.is_open = 0 and user_info.is_verified=1
+     and user_status.mark_one>=job_criteria.round_one 
     ${
       req.query.username == 1
         ? ` and (user_info.user_name LIKE "%${
